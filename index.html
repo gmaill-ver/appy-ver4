@@ -1434,23 +1434,6 @@
             <!-- 問題集選択（開閉式カード） -->
             <div id="bookCardsContainer"></div>
             
-            <!-- カレンダー -->
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <div class="calendar-nav">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-                    </div>
-                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
-                </div>
-                <div class="calendar-grid" id="calendarGrid"></div>
-                <div class="calendar-actions">
-                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
-                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
-                </div>
-            </div>
-            
             <!-- パンくずリスト -->
             <div class="breadcrumb" id="breadcrumb" style="display: none;"></div>
             
@@ -1501,6 +1484,23 @@
                 </div>
                 
                 <button class="save-button" onclick="saveRecord()">学習記録を保存</button>
+            </div>
+
+        <!-- カレンダー -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-actions">
+                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
+                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
+                </div>
             </div>
         </div>
         
