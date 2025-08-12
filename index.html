@@ -299,29 +299,22 @@
             padding: 5px;
         }
         
-        .calendar-weekday.weekend {
-            color: var(--danger);
-        }
-        
         .calendar-day {
-            min-height: 60px;
+            aspect-ratio: 1;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             border: 1px solid var(--light);
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
             font-size: 14px;
-            padding: 3px;
         }
         
         .calendar-day:hover {
             background: var(--light);
-        }
-        
-        .calendar-day.weekend {
-            background: var(--weekend-bg);
         }
         
         .calendar-day.other-month {
@@ -331,6 +324,7 @@
         .calendar-day.today {
             background: var(--primary);
             color: white;
+            font-weight: 700;
         }
         
         .calendar-day.selected {
@@ -338,29 +332,13 @@
             color: white;
         }
         
-        .calendar-day-number {
+        .calendar-day.has-plan {
             font-weight: 600;
-            margin-bottom: 2px;
-        }
-        
-        .calendar-day-plans {
-            font-size: 10px;
-            line-height: 1.2;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-        
-        .calendar-plan-text {
-            color: inherit;
-            margin: 1px 0;
         }
         
         .calendar-plan-dot {
             position: absolute;
             bottom: 2px;
-            right: 2px;
             width: 6px;
             height: 6px;
             border-radius: 50%;
@@ -1456,6 +1434,23 @@
             <!-- 問題集選択（開閉式カード） -->
             <div id="bookCardsContainer"></div>
             
+            <!-- カレンダー -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-actions">
+                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
+                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
+                </div>
+            </div>
+            
             <!-- パンくずリスト -->
             <div class="breadcrumb" id="breadcrumb" style="display: none;"></div>
             
@@ -1506,23 +1501,6 @@
                 </div>
                 
                 <button class="save-button" onclick="saveRecord()">学習記録を保存</button>
-            </div>
-
-        <!-- カレンダー -->
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <div class="calendar-nav">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-                    </div>
-                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
-                </div>
-                <div class="calendar-grid" id="calendarGrid"></div>
-                <div class="calendar-actions">
-                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
-                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
-                </div>
             </div>
         </div>
         
@@ -2146,6 +2124,7 @@
         // 学習計画モーダル
         function openPlanModal() {
             document.getElementById('planModal').classList.add('active');
+            document.getElementById('planList').style.display = 'none';
             
             // 今日の日付を初期値に設定
             const today = new Date().toISOString().split('T')[0];
