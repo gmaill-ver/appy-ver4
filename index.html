@@ -525,6 +525,21 @@
             color: var(--gray);
         }
         
+        .plan-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .plan-item-edit {
+            padding: 5px 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
         .plan-item-delete {
             padding: 5px 10px;
             background: var(--danger);
@@ -1220,6 +1235,125 @@
             color: var(--warning);
         }
         
+        /* 一問一答カード */
+        .qa-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: var(--shadow);
+            min-height: 200px;
+        }
+        
+        .qa-question {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .qa-answer {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .qa-answer.show {
+            display: block;
+        }
+        
+        .qa-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .qa-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .qa-btn.show-answer {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .qa-btn.correct {
+            background: var(--success);
+            color: white;
+        }
+        
+        .qa-btn.wrong {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .qa-btn.next {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .qa-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .qa-selector select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--light);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .qa-selector button {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .qa-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+        
+        .qa-progress-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .qa-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .qa-stat {
+            font-size: 12px;
+        }
+        
+        .qa-stat-value {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
         /* アコーディオン */
         .accordion {
             margin-bottom: 10px;
@@ -1675,6 +1809,17 @@
                 </div>
             </div>
             
+            <!-- 学習履歴 -->
+            <div class="accordion">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>📅 学習履歴</span>
+                    <span class="accordion-arrow">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div id="historyContent"></div>
+                </div>
+            </div>
+            
             <!-- ヒートマップ -->
             <div class="accordion">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -1742,9 +1887,9 @@
             <span class="footer-tab-icon">📝</span>
             <span class="footer-tab-label">登録</span>
         </button>
-        <button class="footer-tab" onclick="switchFooterTab('history', event)">
-            <span class="footer-tab-icon">📅</span>
-            <span class="footer-tab-label">履歴</span>
+        <button class="footer-tab" onclick="switchFooterTab('qa', event)">
+            <span class="footer-tab-icon">❓</span>
+            <span class="footer-tab-label">一問一答</span>
         </button>
         <button class="footer-tab" onclick="switchFooterTab('results', event)">
             <span class="footer-tab-icon">🏆</span>
@@ -1859,7 +2004,7 @@
                     <div class="plan-display-type">
                         <label>
                             <input type="radio" name="displayType" value="bullet" checked>
-                            <span>・表示</span>
+                            <span>・</span>
                         </label>
                         <label>
                             <input type="radio" name="displayType" value="text">
@@ -1890,6 +2035,7 @@
                     </div>
                 </div>
                 
+                <input type="hidden" id="editPlanId" value="">
                 <button class="save-button" onclick="savePlan()">計画を保存</button>
             </div>
             
@@ -1942,6 +2088,11 @@
         let sortMode = false;
         let heatmapPinnedBook = null;
         let radarPinnedBook = null;
+        let qaQuestions = {};
+        let currentQASet = [];
+        let currentQAIndex = 0;
+        let qaAnswerShown = false;
+        let qaStats = { total: 0, correct: 0, wrong: 0 };
         
         // タイマー関連
         let timerInterval = null;
@@ -1969,6 +2120,7 @@
             renderBookCards();
             loadAllRecords();
             loadSavedQuestionStates();
+            loadQAQuestions();
             updateChartBars();
             updateHeatmapBookSelect();
             updateRadarBookSelect();
@@ -1977,6 +2129,7 @@
             loadExamDate();
             updateExamCountdown();
             loadPinnedSettings();
+            updateHistoryContent();
             
             // カラーピッカーイベント設定
             document.querySelectorAll('.color-option').forEach(option => {
@@ -1987,6 +2140,19 @@
                 });
             });
         });
+        
+        // 一問一答問題の読み込み
+        function loadQAQuestions() {
+            const saved = localStorage.getItem('qaQuestions');
+            if (saved) {
+                qaQuestions = JSON.parse(saved);
+            }
+        }
+        
+        // 一問一答問題の保存
+        function saveQAQuestions() {
+            localStorage.setItem('qaQuestions', JSON.stringify(qaQuestions));
+        }
         
         // 問題集順序の読み込み
         function loadBookOrder() {
@@ -2387,7 +2553,7 @@
             return num.toString().padStart(2, '0');
         }
         
-        // カレンダー機能
+        // カレンダー機能（月曜スタートに修正）
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const monthDisplay = document.getElementById('calendarMonth');
@@ -2401,16 +2567,19 @@
             const lastDay = new Date(year, month + 1, 0);
             const prevLastDay = new Date(year, month, 0);
             
-            const firstDayOfWeek = firstDay.getDay();
+            // 月曜スタートに調整（0=日曜を6に、1-6をそのまま0-5に）
+            let firstDayOfWeek = firstDay.getDay();
+            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+            
             const lastDate = lastDay.getDate();
             const prevLastDate = prevLastDay.getDate();
             
             let html = '';
             
-            // 曜日ヘッダー
-            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            // 曜日ヘッダー（月曜スタート）
+            const weekdays = ['月', '火', '水', '木', '金', '土', '日'];
             weekdays.forEach((day, index) => {
-                const isWeekend = index === 0 || index === 6;
+                const isWeekend = index >= 5; // 土日
                 html += `<div class="calendar-weekday ${isWeekend ? 'weekend' : ''}">${day}</div>`;
             });
             
@@ -2437,7 +2606,7 @@
                 if (plans.length > 0) {
                     planTexts = '<div class="calendar-day-plans">';
                     plans.forEach(plan => {
-                        const displayText = plan.displayType === 'bullet' ? `・${plan.title}` : plan.title;
+                        const displayText = plan.displayType === 'bullet' ? `・` : plan.title;
                         planTexts += `<div class="calendar-plan-text" style="color: ${plan.color};">${displayText}</div>`;
                     });
                     planTexts += '</div>';
@@ -2488,6 +2657,7 @@
             // フォームをクリア
             document.getElementById('planTitle').value = '';
             document.getElementById('planContent').value = '';
+            document.getElementById('editPlanId').value = '';
             document.querySelector('input[name="displayType"][value="bullet"]').checked = true;
         }
         
@@ -2502,6 +2672,7 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('planStartDate').value = today;
             document.getElementById('planEndDate').value = today;
+            document.getElementById('editPlanId').value = '';
         }
         
         function closePlanModal() {
@@ -2522,32 +2693,79 @@
             const startDate = document.getElementById('planStartDate').value;
             const endDate = document.getElementById('planEndDate').value;
             const displayType = document.querySelector('input[name="displayType"]:checked').value;
+            const editId = document.getElementById('editPlanId').value;
             
             if (!title || !startDate || !endDate) {
                 alert('必須項目を入力してください');
                 return;
             }
             
-            const plan = {
-                id: Date.now(),
-                title,
-                content,
-                startDate,
-                endDate,
-                color: selectedPlanColor,
-                displayType
-            };
+            if (editId) {
+                // 編集モード
+                const index = studyPlans.findIndex(p => p.id === parseInt(editId));
+                if (index !== -1) {
+                    studyPlans[index] = {
+                        ...studyPlans[index],
+                        title,
+                        content,
+                        startDate,
+                        endDate,
+                        color: selectedPlanColor,
+                        displayType
+                    };
+                }
+            } else {
+                // 新規追加
+                const plan = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    startDate,
+                    endDate,
+                    color: selectedPlanColor,
+                    displayType
+                };
+                studyPlans.push(plan);
+            }
             
-            studyPlans.push(plan);
             saveStudyPlans();
             renderCalendar();
             
             // フォームクリア
             document.getElementById('planTitle').value = '';
             document.getElementById('planContent').value = '';
+            document.getElementById('editPlanId').value = '';
             
             alert('学習計画を保存しました');
             closePlanModal();
+        }
+        
+        function editPlan(planId) {
+            const plan = studyPlans.find(p => p.id === planId);
+            if (!plan) return;
+            
+            document.getElementById('planModal').classList.add('active');
+            document.getElementById('planModalTitle').textContent = '📅 学習計画を編集';
+            document.getElementById('planFormSection').style.display = 'block';
+            document.getElementById('planListSection').style.display = 'none';
+            
+            // フォームに値を設定
+            document.getElementById('planTitle').value = plan.title;
+            document.getElementById('planContent').value = plan.content || '';
+            document.getElementById('planStartDate').value = plan.startDate;
+            document.getElementById('planEndDate').value = plan.endDate;
+            document.getElementById('editPlanId').value = plan.id;
+            
+            // 表示形式を設定
+            document.querySelector(`input[name="displayType"][value="${plan.displayType || 'text'}"]`).checked = true;
+            
+            // 色を設定
+            document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+            const colorOption = document.querySelector(`.color-option[data-color="${plan.color}"]`);
+            if (colorOption) {
+                colorOption.classList.add('selected');
+                selectedPlanColor = plan.color;
+            }
         }
         
         function deletePlan(planId) {
@@ -2569,17 +2787,20 @@
             
             let html = '';
             studyPlans.forEach(plan => {
-                const displayText = plan.displayType === 'bullet' ? `・${plan.title}` : plan.title;
+                const displayText = plan.displayType === 'bullet' ? `・` : plan.title;
                 html += `
                     <div class="plan-item">
                         <div style="display: flex; align-items: center;">
                             <div class="plan-item-color" style="background: ${plan.color};"></div>
                             <div class="plan-item-content">
-                                <div class="plan-item-title">${displayText}</div>
+                                <div class="plan-item-title">${plan.title}</div>
                                 <div class="plan-item-date">${plan.startDate} 〜 ${plan.endDate}</div>
                             </div>
                         </div>
-                        <button class="plan-item-delete" onclick="deletePlan(${plan.id})">削除</button>
+                        <div class="plan-item-actions">
+                            <button class="plan-item-edit" onclick="editPlan(${plan.id})">✏️</button>
+                            <button class="plan-item-delete" onclick="deletePlan(${plan.id})">🗑️</button>
+                        </div>
                     </div>
                 `;
             });
@@ -2752,6 +2973,30 @@
                 bookOrder = [sampleBook1.id, sampleBook2.id, sampleBook3.id];
                 saveBooksToStorage();
                 saveBookOrder();
+                
+                // サンプル一問一答データ
+                const sampleQA = {
+                    'サンプル問題集': [
+                        {
+                            id: 1,
+                            question: '日本国憲法が保障する基本的人権の中で、最も重要とされる権利は何か？',
+                            answer: '個人の尊厳（憲法13条）。すべての基本的人権の根底にある権利とされる。'
+                        },
+                        {
+                            id: 2,
+                            question: '行政行為の効力のうち、「公定力」とは何か？',
+                            answer: '行政行為が違法であっても、権限ある機関により取り消されるまでは有効として扱われる効力。'
+                        },
+                        {
+                            id: 3,
+                            question: '民法上の「善意」と「悪意」の意味を説明せよ。',
+                            answer: '善意：ある事実を知らないこと。悪意：ある事実を知っていること。道徳的な善悪とは無関係。'
+                        }
+                    ]
+                };
+                
+                qaQuestions = sampleQA;
+                saveQAQuestions();
             }
         }
         
@@ -3078,6 +3323,7 @@
                 updateChartBars();
                 updateHeatmap();
                 updateWeaknessAnalysis();
+                updateHistoryContent();
             } else if (tabName === 'progress') {
                 updateProgressContent();
                 drawRadarChart();
@@ -3092,7 +3338,7 @@
             
             const titles = {
                 'register': '📝 問題集登録',
-                'history': '📅 学習履歴',
+                'qa': '❓ 一問一答',
                 'results': '🏆 獲得バッジ',
                 'settings': '⚙️ 設定'
             };
@@ -3103,8 +3349,8 @@
                 case 'register':
                     modalBody.innerHTML = getRegisterContent();
                     break;
-                case 'history':
-                    modalBody.innerHTML = getHistoryContent();
+                case 'qa':
+                    modalBody.innerHTML = getQAContent();
                     break;
                 case 'results':
                     modalBody.innerHTML = getResultsContent();
@@ -3136,6 +3382,228 @@
             }, 100);
             
             return html;
+        }
+        
+        // 一問一答コンテンツ
+        function getQAContent() {
+            let html = `
+                <div class="qa-card">
+                    <div class="qa-selector">
+                        <select id="qaSetSelect" onchange="selectQASet()">
+                            <option value="">問題集を選択</option>
+            `;
+            
+            Object.keys(qaQuestions).forEach(setName => {
+                html += `<option value="${setName}">${setName}</option>`;
+            });
+            
+            html += `
+                        </select>
+                        <button onclick="startQA()">開始</button>
+                    </div>
+                    
+                    <div class="qa-progress" id="qaProgress" style="display: none;">
+                        <span class="qa-progress-text">問題 <span id="qaCurrentNum">0</span> / <span id="qaTotalNum">0</span></span>
+                        <div class="qa-stats">
+                            <span class="qa-stat">正解: <span class="qa-stat-value" id="qaCorrectCount">0</span></span>
+                            <span class="qa-stat">不正解: <span class="qa-stat-value" id="qaWrongCount">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div id="qaContent"></div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h4>問題を手動追加</h4>
+                    <div class="form-group">
+                        <label class="form-label">問題集名</label>
+                        <input type="text" class="form-control" id="qaNewSetName" placeholder="問題集名">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">問題文</label>
+                        <textarea class="form-control" id="qaNewQuestion" rows="3" placeholder="問題文を入力"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">答え</label>
+                        <textarea class="form-control" id="qaNewAnswer" rows="3" placeholder="答えを入力"></textarea>
+                    </div>
+                    <button class="save-button" onclick="addQAQuestion()">問題を追加</button>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h4>登録済み問題</h4>
+                    <div id="qaListContent"></div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                renderQAList();
+            }, 100);
+            
+            return html;
+        }
+        
+        // 一問一答リスト表示
+        function renderQAList() {
+            const container = document.getElementById('qaListContent');
+            if (!container) return;
+            
+            let html = '';
+            
+            Object.entries(qaQuestions).forEach(([setName, questions]) => {
+                html += `<h5>${setName} (${questions.length}問)</h5>`;
+                questions.forEach(q => {
+                    html += `
+                        <div class="delete-list-item">
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">${q.question}</div>
+                                <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">${q.answer}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteQAQuestion('${setName}', ${q.id})">削除</button>
+                        </div>
+                    `;
+                });
+            });
+            
+            container.innerHTML = html || '<p style="color: var(--gray); text-align: center;">問題がありません</p>';
+        }
+        
+        // 一問一答問題追加
+        function addQAQuestion() {
+            const setName = document.getElementById('qaNewSetName').value || 'その他';
+            const question = document.getElementById('qaNewQuestion').value;
+            const answer = document.getElementById('qaNewAnswer').value;
+            
+            if (!question || !answer) {
+                alert('問題文と答えを入力してください');
+                return;
+            }
+            
+            if (!qaQuestions[setName]) {
+                qaQuestions[setName] = [];
+            }
+            
+            const newQuestion = {
+                id: Date.now(),
+                question,
+                answer
+            };
+            
+            qaQuestions[setName].push(newQuestion);
+            saveQAQuestions();
+            
+            // フォームクリア
+            document.getElementById('qaNewQuestion').value = '';
+            document.getElementById('qaNewAnswer').value = '';
+            
+            alert('問題を追加しました');
+            renderQAList();
+        }
+        
+        // 一問一答問題削除
+        function deleteQAQuestion(setName, questionId) {
+            if (confirm('この問題を削除しますか？')) {
+                qaQuestions[setName] = qaQuestions[setName].filter(q => q.id !== questionId);
+                if (qaQuestions[setName].length === 0) {
+                    delete qaQuestions[setName];
+                }
+                saveQAQuestions();
+                renderQAList();
+            }
+        }
+        
+        // 一問一答開始
+        function startQA() {
+            const select = document.getElementById('qaSetSelect');
+            const setName = select.value;
+            
+            if (!setName || !qaQuestions[setName]) {
+                alert('問題集を選択してください');
+                return;
+            }
+            
+            currentQASet = [...qaQuestions[setName]];
+            currentQAIndex = 0;
+            qaStats = { total: currentQASet.length, correct: 0, wrong: 0 };
+            qaAnswerShown = false;
+            
+            document.getElementById('qaProgress').style.display = 'flex';
+            showQAQuestion();
+        }
+        
+        // 一問一答問題表示
+        function showQAQuestion() {
+            if (currentQAIndex >= currentQASet.length) {
+                showQAResult();
+                return;
+            }
+            
+            const question = currentQASet[currentQAIndex];
+            const content = document.getElementById('qaContent');
+            
+            document.getElementById('qaCurrentNum').textContent = currentQAIndex + 1;
+            document.getElementById('qaTotalNum').textContent = currentQASet.length;
+            document.getElementById('qaCorrectCount').textContent = qaStats.correct;
+            document.getElementById('qaWrongCount').textContent = qaStats.wrong;
+            
+            content.innerHTML = `
+                <div class="qa-question">${question.question}</div>
+                <div class="qa-answer ${qaAnswerShown ? 'show' : ''}" id="qaAnswer">${question.answer}</div>
+                <div class="qa-controls">
+                    ${!qaAnswerShown ? 
+                        `<button class="qa-btn show-answer" onclick="showAnswer()">答えを見る</button>` :
+                        `<button class="qa-btn correct" onclick="markQACorrect()">正解</button>
+                         <button class="qa-btn wrong" onclick="markQAWrong()">不正解</button>`
+                    }
+                </div>
+            `;
+        }
+        
+        // 答え表示
+        function showAnswer() {
+            qaAnswerShown = true;
+            document.getElementById('qaAnswer').classList.add('show');
+            showQAQuestion();
+        }
+        
+        // 正解マーク
+        function markQACorrect() {
+            qaStats.correct++;
+            currentQAIndex++;
+            qaAnswerShown = false;
+            showQAQuestion();
+        }
+        
+        // 不正解マーク
+        function markQAWrong() {
+            qaStats.wrong++;
+            currentQAIndex++;
+            qaAnswerShown = false;
+            showQAQuestion();
+        }
+        
+        // 一問一答結果表示
+        function showQAResult() {
+            const content = document.getElementById('qaContent');
+            const rate = Math.round((qaStats.correct / qaStats.total) * 100);
+            
+            content.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>結果</h3>
+                    <div class="stats-grid" style="margin: 20px 0;">
+                        <div class="stat-card">
+                            <div class="stat-value">${qaStats.correct}</div>
+                            <div class="stat-label">正解</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${qaStats.wrong}</div>
+                            <div class="stat-label">不正解</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--primary);">正答率: ${rate}%</div>
+                    <button class="save-button" style="margin-top: 20px;" onclick="startQA()">もう一度</button>
+                </div>
+            `;
         }
         
         // 登録用階層表示
@@ -3509,11 +3977,15 @@
             updateRadarBookSelect();
         }
         
-        // 学習履歴コンテンツ
-        function getHistoryContent() {
-            let html = '<div class="card" style="margin: 10px;">';
+        // 学習履歴コンテンツ更新
+        function updateHistoryContent() {
+            const container = document.getElementById('historyContent');
+            if (!container) return;
             
-            allRecords.slice(-20).reverse().forEach(record => {
+            let html = '';
+            
+            const recentRecords = allRecords.slice(-20).reverse();
+            recentRecords.forEach(record => {
                 const date = new Date(record.timestamp);
                 html += `
                     <div style="padding: 10px; border-bottom: 1px solid var(--light);">
@@ -3526,8 +3998,7 @@
                 `;
             });
             
-            html += '</div>';
-            return html;
+            container.innerHTML = html || '<p style="color: var(--gray); text-align: center;">履歴がありません</p>';
         }
         
         // 実績コンテンツ
@@ -3625,7 +4096,7 @@
                 </div>
                 
                 <div class="card" style="margin: 10px;">
-                    <h4>📥 CSVインポート</h4>
+                    <h4>📥 問題集CSVインポート</h4>
                     <div class="import-section">
                         <label class="form-label">問題集名</label>
                         <input type="text" class="form-control" id="importBookName" placeholder="問題集名を入力">
@@ -3650,10 +4121,31 @@
                 </div>
                 
                 <div class="card" style="margin: 10px;">
+                    <h4>📥 一問一答CSVインポート</h4>
+                    <div class="import-section">
+                        <label class="form-label">問題集名</label>
+                        <input type="text" class="form-control" id="importQASetName" placeholder="問題集名を入力">
+                        
+                        <label class="form-label" style="margin-top: 15px;">CSV形式の問題データ</label>
+                        <textarea class="import-textarea" id="importQACsvData" placeholder="CSV形式のデータを貼り付けてください"></textarea>
+                        
+                        <div class="import-help">
+                            <strong>CSV形式の例：</strong><br>
+                            問題,答え<br>
+                            "日本国憲法が保障する基本的人権の中で、最も重要とされる権利は何か？","個人の尊厳（憲法13条）"<br>
+                            "行政行為の効力のうち、公定力とは何か？","行政行為が違法であっても、権限ある機関により取り消されるまでは有効として扱われる効力"
+                        </div>
+                        
+                        <button class="save-button" style="margin-top: 15px;" onclick="importQACSV()">一問一答をインポート</button>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin: 10px;">
                     <h4>📖 使い方</h4>
                     <ol style="margin-left: 20px; line-height: 1.8;">
                         <li>「登録」から問題集を作成し、階層構造を設定</li>
                         <li>「記録入力」で問題を解いた結果を記録</li>
+                        <li>「一問一答」で知識の確認</li>
                         <li>「分析」で学習状況を確認</li>
                         <li>「進捗」で全体の進み具合を把握</li>
                         <li>カレンダーで学習計画を管理</li>
@@ -3797,6 +4289,61 @@
                 
                 alert('CSVデータをインポートしました');
                 closeFooterModal();
+            } catch (error) {
+                alert('CSVの解析に失敗しました。形式を確認してください。');
+                console.error(error);
+            }
+        }
+        
+        // 一問一答CSVインポート
+        function importQACSV() {
+            const setName = document.getElementById('importQASetName').value;
+            const csvData = document.getElementById('importQACsvData').value;
+            
+            if (!setName || !csvData) {
+                alert('問題集名とCSVデータを入力してください');
+                return;
+            }
+            
+            try {
+                const lines = csvData.trim().split('\n');
+                const questions = [];
+                
+                // ヘッダー行をスキップ
+                let startIndex = 0;
+                if (lines[0].includes('問題') || lines[0].includes('答え')) {
+                    startIndex = 1;
+                }
+                
+                for (let i = startIndex; i < lines.length; i++) {
+                    // カンマを含む可能性があるため、正規表現で分割
+                    const match = lines[i].match(/^"([^"]+)","([^"]+)"$|^([^,]+),(.+)$/);
+                    if (match) {
+                        const question = match[1] || match[3];
+                        const answer = match[2] || match[4];
+                        
+                        if (question && answer) {
+                            questions.push({
+                                id: Date.now() + i,
+                                question: question.trim(),
+                                answer: answer.trim()
+                            });
+                        }
+                    }
+                }
+                
+                if (questions.length > 0) {
+                    if (!qaQuestions[setName]) {
+                        qaQuestions[setName] = [];
+                    }
+                    qaQuestions[setName].push(...questions);
+                    saveQAQuestions();
+                    
+                    alert(`${questions.length}問の問題をインポートしました`);
+                    closeFooterModal();
+                } else {
+                    alert('有効な問題が見つかりませんでした');
+                }
             } catch (error) {
                 alert('CSVの解析に失敗しました。形式を確認してください。');
                 console.error(error);
@@ -4405,13 +4952,18 @@
             const weekData = [0, 0, 0, 0, 0, 0, 0];
             const today = new Date();
             const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+            const todayDay = today.getDay();
+            const diff = todayDay === 0 ? 6 : todayDay - 1; // 月曜を0とする
+            startOfWeek.setDate(today.getDate() - diff);
             
             allRecords.forEach(record => {
                 const recordDate = new Date(record.timestamp);
                 if (recordDate >= startOfWeek) {
-                    const dayIndex = (recordDate.getDay() + 6) % 7;
-                    weekData[dayIndex] += record.stats.total || 0;
+                    let dayIndex = recordDate.getDay();
+                    dayIndex = dayIndex === 0 ? 6 : dayIndex - 1; // 月曜を0とする
+                    if (dayIndex >= 0 && dayIndex < 7) {
+                        weekData[dayIndex] += record.stats.total || 0;
+                    }
                 }
             });
             
