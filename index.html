@@ -25,6 +25,7 @@
             --light: #f3f4f6;
             --lighter: #f9fafb;
             --white: #ffffff;
+            --weekend-bg: #f5f5f5;
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
@@ -70,7 +71,7 @@
             opacity: 0.9;
         }
         
-        /* タイマーアイコン（ヘッダー右上） */
+        /* タイマーアイコン（小さくした） */
         .timer-icon-btn {
             position: absolute;
             top: 20px;
@@ -78,13 +79,13 @@
             background: rgba(255, 255, 255, 0.2);
             border: none;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 24px;
+            font-size: 18px;
             transition: all 0.3s;
         }
         
@@ -299,22 +300,29 @@
             padding: 5px;
         }
         
+        .calendar-weekday.weekend {
+            color: var(--danger);
+        }
+        
         .calendar-day {
-            aspect-ratio: 1;
+            min-height: 60px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
             border: 1px solid var(--light);
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
             font-size: 14px;
+            padding: 3px;
         }
         
         .calendar-day:hover {
             background: var(--light);
+        }
+        
+        .calendar-day.weekend {
+            background: var(--weekend-bg);
         }
         
         .calendar-day.other-month {
@@ -324,7 +332,6 @@
         .calendar-day.today {
             background: var(--primary);
             color: white;
-            font-weight: 700;
         }
         
         .calendar-day.selected {
@@ -332,13 +339,29 @@
             color: white;
         }
         
-        .calendar-day.has-plan {
+        .calendar-day-number {
             font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .calendar-day-plans {
+            font-size: 10px;
+            line-height: 1.2;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .calendar-plan-text {
+            color: inherit;
+            margin: 1px 0;
         }
         
         .calendar-plan-dot {
             position: absolute;
             bottom: 2px;
+            right: 2px;
             width: 6px;
             height: 6px;
             border-radius: 50%;
@@ -416,6 +439,19 @@
             border: 1px solid var(--light);
             border-radius: 8px;
             font-size: 14px;
+        }
+        
+        .plan-display-type {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .plan-display-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
         }
         
         .date-range-inputs {
@@ -1434,23 +1470,6 @@
             <!-- 問題集選択（開閉式カード） -->
             <div id="bookCardsContainer"></div>
             
-            <!-- カレンダー -->
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <div class="calendar-nav">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-                    </div>
-                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
-                </div>
-                <div class="calendar-grid" id="calendarGrid"></div>
-                <div class="calendar-actions">
-                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
-                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
-                </div>
-            </div>
-            
             <!-- パンくずリスト -->
             <div class="breadcrumb" id="breadcrumb" style="display: none;"></div>
             
@@ -1501,6 +1520,23 @@
                 </div>
                 
                 <button class="save-button" onclick="saveRecord()">学習記録を保存</button>
+            </div>
+            
+            <!-- カレンダー（最下部に移動） -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+                        <span class="calendar-month" id="calendarMonth">2025年1月</span>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <button class="calendar-nav-btn" onclick="goToToday()">今日</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-actions">
+                    <button class="calendar-btn add-plan" onclick="openPlanModal()">📝 学習計画を追加</button>
+                    <button class="calendar-btn view-plans" onclick="viewPlans()">📋 計画一覧</button>
+                </div>
             </div>
         </div>
         
