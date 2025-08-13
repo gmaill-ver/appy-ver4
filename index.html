@@ -25,7 +25,7 @@
             --light: #f3f4f6;
             --lighter: #f9fafb;
             --white: #ffffff;
-            --weekend-bg: #f5f5f5;
+            --weekend-bg: #e8e8e8;
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
@@ -71,7 +71,7 @@
             opacity: 0.9;
         }
         
-        /* タイマーアイコン（小さくした） */
+        /* タイマーアイコン（さらに小さく） */
         .timer-icon-btn {
             position: absolute;
             top: 20px;
@@ -79,13 +79,13 @@
             background: rgba(255, 255, 255, 0.2);
             border: none;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 14px;
             transition: all 0.3s;
         }
         
@@ -345,17 +345,20 @@
         }
         
         .calendar-day-plans {
-            font-size: 10px;
+            font-size: 9px;
             line-height: 1.2;
             overflow: hidden;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            color: inherit;
         }
         
         .calendar-plan-text {
-            color: inherit;
             margin: 1px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .calendar-plan-dot {
@@ -605,6 +608,24 @@
         }
         
         /* 問題集カード選択（開閉式） */
+        .book-cards-wrapper {
+            position: relative;
+        }
+        
+        .book-order-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            padding: 5px 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
         .book-card {
             background: white;
             border: 2px solid var(--light);
@@ -613,6 +634,25 @@
             margin: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
+        }
+        
+        .book-card.dragging {
+            opacity: 0.5;
+        }
+        
+        .book-card-drag-handle {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: move;
+            display: none;
+            color: var(--gray);
+        }
+        
+        .book-card.sortable .book-card-drag-handle {
+            display: block;
         }
         
         .book-card:hover {
@@ -628,11 +668,13 @@
         .book-card-title {
             font-weight: 600;
             margin-bottom: 5px;
+            margin-left: 20px;
         }
         
         .book-card-meta {
             font-size: 12px;
             color: var(--gray);
+            margin-left: 20px;
         }
         
         /* 階層リスト表示（統一デザイン） */
@@ -786,16 +828,35 @@
         
         .heatmap-controls {
             margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         
         .heatmap-select {
-            width: 100%;
+            flex: 1;
             padding: 10px;
             border: 1px solid var(--light);
             border-radius: 8px;
             background: white;
             font-size: 14px;
             cursor: pointer;
+        }
+        
+        .heatmap-toggle-btn {
+            padding: 8px 15px;
+            border: 1px solid var(--light);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .heatmap-toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
         
         .heatmap-grid {
@@ -857,16 +918,39 @@
             align-items: center;
         }
         
-        .radar-chart-select {
+        .radar-chart-controls {
             width: 100%;
             max-width: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .radar-chart-select {
+            width: 100%;
             padding: 10px;
             border: 1px solid var(--light);
             border-radius: 8px;
             background: white;
             font-size: 14px;
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .radar-toggle-btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .radar-toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
         
         .radar-chart {
@@ -1205,6 +1289,34 @@
             font-size: 14px;
         }
         
+        /* CSVインポート */
+        .import-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--lighter);
+            border-radius: 10px;
+        }
+        
+        .import-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid var(--light);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .import-help {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--white);
+            border-left: 3px solid var(--primary);
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
         /* 削除リスト */
         .delete-list-item {
             display: flex;
@@ -1468,7 +1580,10 @@
         <!-- 記録入力タブ -->
         <div id="record-tab" class="tab-content active">
             <!-- 問題集選択（開閉式カード） -->
-            <div id="bookCardsContainer"></div>
+            <div class="book-cards-wrapper">
+                <button class="book-order-btn" onclick="toggleBookSort()">並替え</button>
+                <div id="bookCardsContainer"></div>
+            </div>
             
             <!-- パンくずリスト -->
             <div class="breadcrumb" id="breadcrumb" style="display: none;"></div>
@@ -1522,7 +1637,7 @@
                 <button class="save-button" onclick="saveRecord()">学習記録を保存</button>
             </div>
             
-            <!-- カレンダー（最下部に移動） -->
+            <!-- カレンダー（最下部） -->
             <div class="calendar-container">
                 <div class="calendar-header">
                     <div class="calendar-nav">
@@ -1571,6 +1686,7 @@
                         <select class="heatmap-select" id="heatmapBookSelect" onchange="updateHeatmap()">
                             <option value="">問題集を選択</option>
                         </select>
+                        <button class="heatmap-toggle-btn" id="heatmapToggleBtn" onclick="toggleHeatmapPinned()">📌 固定</button>
                     </div>
                     <div class="heatmap-grid" id="heatmapGrid"></div>
                 </div>
@@ -1604,12 +1720,15 @@
                     <span class="card-title">科目別進捗</span>
                 </div>
                 <div class="radar-chart-container">
-                    <select class="radar-chart-select" id="radarBookSelect" onchange="drawRadarChart()">
-                        <option value="">問題集を選択</option>
-                    </select>
-                    <div style="display: flex; gap: 10px; margin: 10px 0; justify-content: center;">
-                        <button class="chart-btn active" id="radarModeSubject" onclick="setRadarMode('subject', this)">科目別</button>
-                        <button class="chart-btn" id="radarModeCompare" onclick="setRadarMode('compare', this)">問題集比較</button>
+                    <div class="radar-chart-controls">
+                        <select class="radar-chart-select" id="radarBookSelect" onchange="drawRadarChart()">
+                            <option value="">問題集を選択</option>
+                        </select>
+                        <button class="radar-toggle-btn" id="radarToggleBtn" onclick="toggleRadarPinned()">📌 固定表示</button>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button class="chart-btn active" id="radarModeSubject" onclick="setRadarMode('subject', this)">科目別</button>
+                            <button class="chart-btn" id="radarModeCompare" onclick="setRadarMode('compare', this)">問題集比較</button>
+                        </div>
                     </div>
                     <canvas id="radarChart" width="300" height="300"></canvas>
                 </div>
@@ -1720,45 +1839,61 @@
     <div id="planModal" class="plan-modal">
         <div class="plan-modal-content">
             <div class="modal-header">
-                <h3>📅 学習計画</h3>
+                <h3 id="planModalTitle">📅 学習計画</h3>
                 <button class="modal-close" onclick="closePlanModal()">×</button>
             </div>
             
-            <div class="plan-form-group">
-                <label class="plan-form-label">計画タイトル</label>
-                <input type="text" class="plan-form-control" id="planTitle" placeholder="例：民法総則の復習">
-            </div>
-            
-            <div class="plan-form-group">
-                <label class="plan-form-label">計画内容</label>
-                <textarea class="plan-form-control" id="planContent" rows="3" placeholder="学習内容の詳細を入力"></textarea>
-            </div>
-            
-            <div class="plan-form-group">
-                <label class="plan-form-label">日付範囲</label>
-                <div class="date-range-inputs">
-                    <input type="date" class="plan-form-control" id="planStartDate">
-                    <span>〜</span>
-                    <input type="date" class="plan-form-control" id="planEndDate">
+            <div id="planFormSection">
+                <div class="plan-form-group">
+                    <label class="plan-form-label">計画タイトル</label>
+                    <input type="text" class="plan-form-control" id="planTitle" placeholder="例：民法総則の復習">
                 </div>
-            </div>
-            
-            <div class="plan-form-group">
-                <label class="plan-form-label">色設定</label>
-                <div class="color-picker">
-                    <div class="color-option selected" style="background: #3498db;" data-color="#3498db"></div>
-                    <div class="color-option" style="background: #10b981;" data-color="#10b981"></div>
-                    <div class="color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
-                    <div class="color-option" style="background: #ef4444;" data-color="#ef4444"></div>
-                    <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
-                    <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
-                    <div class="color-option" style="background: #6b7280;" data-color="#6b7280"></div>
+                
+                <div class="plan-form-group">
+                    <label class="plan-form-label">計画内容</label>
+                    <textarea class="plan-form-control" id="planContent" rows="3" placeholder="学習内容の詳細を入力"></textarea>
                 </div>
+                
+                <div class="plan-form-group">
+                    <label class="plan-form-label">表示形式</label>
+                    <div class="plan-display-type">
+                        <label>
+                            <input type="radio" name="displayType" value="bullet" checked>
+                            <span>・表示</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="displayType" value="text">
+                            <span>通常表示</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="plan-form-group">
+                    <label class="plan-form-label">日付範囲</label>
+                    <div class="date-range-inputs">
+                        <input type="date" class="plan-form-control" id="planStartDate">
+                        <span>〜</span>
+                        <input type="date" class="plan-form-control" id="planEndDate">
+                    </div>
+                </div>
+                
+                <div class="plan-form-group">
+                    <label class="plan-form-label">色設定</label>
+                    <div class="color-picker">
+                        <div class="color-option selected" style="background: #3498db;" data-color="#3498db"></div>
+                        <div class="color-option" style="background: #10b981;" data-color="#10b981"></div>
+                        <div class="color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                        <div class="color-option" style="background: #ef4444;" data-color="#ef4444"></div>
+                        <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                        <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                        <div class="color-option" style="background: #6b7280;" data-color="#6b7280"></div>
+                    </div>
+                </div>
+                
+                <button class="save-button" onclick="savePlan()">計画を保存</button>
             </div>
             
-            <button class="save-button" onclick="savePlan()">計画を保存</button>
-            
-            <div id="planList" style="margin-top: 20px; display: none;">
+            <div id="planListSection" style="display: none;">
                 <h4>登録済みの計画</h4>
                 <div class="plan-list" id="planListContent"></div>
             </div>
@@ -1793,6 +1928,7 @@
     <script>
         // データ構造
         let books = {};
+        let bookOrder = [];
         let currentBook = null;
         let currentPath = [];
         let questionStates = {};
@@ -1803,6 +1939,9 @@
         let savedQuestionStates = {};
         let selectedBookCard = null;
         let radarChartMode = 'subject';
+        let sortMode = false;
+        let heatmapPinnedBook = null;
+        let radarPinnedBook = null;
         
         // タイマー関連
         let timerInterval = null;
@@ -1825,6 +1964,7 @@
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             loadBooksFromStorage();
+            loadBookOrder();
             initializeSampleData();
             renderBookCards();
             loadAllRecords();
@@ -1836,6 +1976,7 @@
             renderCalendar();
             loadExamDate();
             updateExamCountdown();
+            loadPinnedSettings();
             
             // カラーピッカーイベント設定
             document.querySelectorAll('.color-option').forEach(option => {
@@ -1846,6 +1987,167 @@
                 });
             });
         });
+        
+        // 問題集順序の読み込み
+        function loadBookOrder() {
+            const saved = localStorage.getItem('bookOrder');
+            if (saved) {
+                bookOrder = JSON.parse(saved);
+            } else {
+                bookOrder = Object.keys(books);
+            }
+        }
+        
+        // 問題集順序の保存
+        function saveBookOrder() {
+            localStorage.setItem('bookOrder', JSON.stringify(bookOrder));
+        }
+        
+        // ピン固定設定の読み込み
+        function loadPinnedSettings() {
+            const heatmapPinned = localStorage.getItem('heatmapPinnedBook');
+            if (heatmapPinned) {
+                heatmapPinnedBook = heatmapPinned;
+                const select = document.getElementById('heatmapBookSelect');
+                if (select) {
+                    select.value = heatmapPinnedBook;
+                    document.getElementById('heatmapToggleBtn').classList.add('active');
+                    updateHeatmap();
+                }
+            }
+            
+            const radarPinned = localStorage.getItem('radarPinnedBook');
+            if (radarPinned) {
+                radarPinnedBook = radarPinned;
+                const select = document.getElementById('radarBookSelect');
+                if (select) {
+                    select.value = radarPinnedBook;
+                    document.getElementById('radarToggleBtn').classList.add('active');
+                    drawRadarChart();
+                }
+            }
+        }
+        
+        // ヒートマップのピン固定切り替え
+        function toggleHeatmapPinned() {
+            const select = document.getElementById('heatmapBookSelect');
+            const btn = document.getElementById('heatmapToggleBtn');
+            
+            if (heatmapPinnedBook) {
+                heatmapPinnedBook = null;
+                localStorage.removeItem('heatmapPinnedBook');
+                btn.classList.remove('active');
+            } else {
+                if (select.value) {
+                    heatmapPinnedBook = select.value;
+                    localStorage.setItem('heatmapPinnedBook', heatmapPinnedBook);
+                    btn.classList.add('active');
+                } else {
+                    alert('固定する問題集を選択してください');
+                }
+            }
+        }
+        
+        // レーダーチャートのピン固定切り替え
+        function toggleRadarPinned() {
+            const select = document.getElementById('radarBookSelect');
+            const btn = document.getElementById('radarToggleBtn');
+            
+            if (radarPinnedBook) {
+                radarPinnedBook = null;
+                localStorage.removeItem('radarPinnedBook');
+                btn.classList.remove('active');
+            } else {
+                if (select.value) {
+                    radarPinnedBook = select.value;
+                    localStorage.setItem('radarPinnedBook', radarPinnedBook);
+                    btn.classList.add('active');
+                } else {
+                    alert('固定する問題集を選択してください');
+                }
+            }
+        }
+        
+        // 問題集カードのソートモード切り替え
+        function toggleBookSort() {
+            sortMode = !sortMode;
+            renderBookCards();
+            
+            if (sortMode) {
+                enableDragAndDrop();
+            }
+        }
+        
+        // ドラッグ＆ドロップの有効化
+        function enableDragAndDrop() {
+            const container = document.getElementById('bookCardsContainer');
+            let draggedElement = null;
+            
+            const cards = container.querySelectorAll('.book-card');
+            cards.forEach(card => {
+                card.draggable = true;
+                
+                card.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', this.innerHTML);
+                });
+                
+                card.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+                
+                card.addEventListener('dragover', function(e) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                    }
+                    e.dataTransfer.dropEffect = 'move';
+                    
+                    const draggingCard = container.querySelector('.dragging');
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    
+                    if (afterElement == null) {
+                        container.appendChild(draggingCard);
+                    } else {
+                        container.insertBefore(draggingCard, afterElement);
+                    }
+                });
+                
+                card.addEventListener('drop', function(e) {
+                    if (e.stopPropagation) {
+                        e.stopPropagation();
+                    }
+                    
+                    // 新しい順序を保存
+                    const newOrder = [];
+                    container.querySelectorAll('.book-card').forEach(c => {
+                        const bookId = c.id.replace('book-card-', '');
+                        newOrder.push(bookId);
+                    });
+                    bookOrder = newOrder;
+                    saveBookOrder();
+                    
+                    return false;
+                });
+            });
+        }
+        
+        // ドラッグ位置の計算
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.book-card:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
         
         // 試験日設定読み込み
         function loadExamDate() {
@@ -2107,8 +2409,9 @@
             
             // 曜日ヘッダー
             const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-            weekdays.forEach(day => {
-                html += `<div class="calendar-weekday">${day}</div>`;
+            weekdays.forEach((day, index) => {
+                const isWeekend = index === 0 || index === 6;
+                html += `<div class="calendar-weekday ${isWeekend ? 'weekend' : ''}">${day}</div>`;
             });
             
             // 前月の日付
@@ -2120,16 +2423,29 @@
             const today = new Date();
             for (let date = 1; date <= lastDate; date++) {
                 const currentDay = new Date(year, month, date);
+                const dayOfWeek = currentDay.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 const isToday = currentDay.toDateString() === today.toDateString();
                 const plans = getPlansForDate(currentDay);
                 
                 let classes = 'calendar-day';
+                if (isWeekend) classes += ' weekend';
                 if (isToday) classes += ' today';
                 if (plans.length > 0) classes += ' has-plan';
                 
+                let planTexts = '';
+                if (plans.length > 0) {
+                    planTexts = '<div class="calendar-day-plans">';
+                    plans.forEach(plan => {
+                        const displayText = plan.displayType === 'bullet' ? `・${plan.title}` : plan.title;
+                        planTexts += `<div class="calendar-plan-text" style="color: ${plan.color};">${displayText}</div>`;
+                    });
+                    planTexts += '</div>';
+                }
+                
                 html += `<div class="${classes}" onclick="selectDate(${year}, ${month}, ${date})">
-                    ${date}
-                    ${plans.length > 0 ? `<div class="calendar-plan-dot" style="background: ${plans[0].color};"></div>` : ''}
+                    <div class="calendar-day-number">${date}</div>
+                    ${planTexts}
                 </div>`;
             }
             
@@ -2154,13 +2470,33 @@
         
         function selectDate(year, month, date) {
             selectedDate = new Date(year, month, date);
-            renderCalendar();
+            openPlanModalForDate(selectedDate);
+        }
+        
+        // 日付を指定して計画モーダルを開く
+        function openPlanModalForDate(date) {
+            document.getElementById('planModal').classList.add('active');
+            document.getElementById('planModalTitle').textContent = '📅 学習計画を追加';
+            document.getElementById('planFormSection').style.display = 'block';
+            document.getElementById('planListSection').style.display = 'none';
+            
+            // 選択した日付を初期値に設定
+            const dateStr = date.toISOString().split('T')[0];
+            document.getElementById('planStartDate').value = dateStr;
+            document.getElementById('planEndDate').value = dateStr;
+            
+            // フォームをクリア
+            document.getElementById('planTitle').value = '';
+            document.getElementById('planContent').value = '';
+            document.querySelector('input[name="displayType"][value="bullet"]').checked = true;
         }
         
         // 学習計画モーダル
         function openPlanModal() {
             document.getElementById('planModal').classList.add('active');
-            document.getElementById('planList').style.display = 'none';
+            document.getElementById('planModalTitle').textContent = '📅 学習計画を追加';
+            document.getElementById('planFormSection').style.display = 'block';
+            document.getElementById('planListSection').style.display = 'none';
             
             // 今日の日付を初期値に設定
             const today = new Date().toISOString().split('T')[0];
@@ -2174,7 +2510,9 @@
         
         function viewPlans() {
             document.getElementById('planModal').classList.add('active');
-            document.getElementById('planList').style.display = 'block';
+            document.getElementById('planModalTitle').textContent = '📋 計画一覧';
+            document.getElementById('planFormSection').style.display = 'none';
+            document.getElementById('planListSection').style.display = 'block';
             renderPlanList();
         }
         
@@ -2183,6 +2521,7 @@
             const content = document.getElementById('planContent').value;
             const startDate = document.getElementById('planStartDate').value;
             const endDate = document.getElementById('planEndDate').value;
+            const displayType = document.querySelector('input[name="displayType"]:checked').value;
             
             if (!title || !startDate || !endDate) {
                 alert('必須項目を入力してください');
@@ -2195,7 +2534,8 @@
                 content,
                 startDate,
                 endDate,
-                color: selectedPlanColor
+                color: selectedPlanColor,
+                displayType
             };
             
             studyPlans.push(plan);
@@ -2229,12 +2569,13 @@
             
             let html = '';
             studyPlans.forEach(plan => {
+                const displayText = plan.displayType === 'bullet' ? `・${plan.title}` : plan.title;
                 html += `
                     <div class="plan-item">
                         <div style="display: flex; align-items: center;">
                             <div class="plan-item-color" style="background: ${plan.color};"></div>
                             <div class="plan-item-content">
-                                <div class="plan-item-title">${plan.title}</div>
+                                <div class="plan-item-title">${displayText}</div>
                                 <div class="plan-item-date">${plan.startDate} 〜 ${plan.endDate}</div>
                             </div>
                         </div>
@@ -2408,7 +2749,9 @@
                 books[sampleBook1.id] = sampleBook1;
                 books[sampleBook2.id] = sampleBook2;
                 books[sampleBook3.id] = sampleBook3;
+                bookOrder = [sampleBook1.id, sampleBook2.id, sampleBook3.id];
                 saveBooksToStorage();
+                saveBookOrder();
             }
         }
         
@@ -2481,10 +2824,22 @@
             
             let html = '';
             
+            // 順序に従って表示
+            const orderedBooks = bookOrder.filter(id => books[id]).map(id => books[id]);
+            // 順序に含まれない新しい本を追加
             Object.values(books).forEach(book => {
+                if (!bookOrder.includes(book.id)) {
+                    orderedBooks.push(book);
+                    bookOrder.push(book.id);
+                }
+            });
+            
+            orderedBooks.forEach(book => {
                 const questionCount = countQuestionsInBook(book);
+                const sortClass = sortMode ? 'sortable' : '';
                 html += `
-                    <div class="book-card" id="book-card-${book.id}" onclick="toggleBookCard('${book.id}')">
+                    <div class="book-card ${sortClass}" id="book-card-${book.id}" onclick="${sortMode ? '' : `toggleBookCard('${book.id}')`}">
+                        <span class="book-card-drag-handle">☰</span>
                         <div class="book-card-title">📚 ${book.name}</div>
                         <div class="book-card-meta">
                             ${Object.keys(book.structure).length}科目 | ${questionCount}問
@@ -2935,7 +3290,9 @@
                     createdAt: new Date().toISOString()
                 };
                 
+                bookOrder.push(bookId);
                 saveBooksToStorage();
+                saveBookOrder();
                 renderBookCards();
                 renderRegisterHierarchy();
                 updateHeatmapBookSelect();
@@ -3143,7 +3500,9 @@
             if (!confirm('この問題集を削除しますか？')) return;
             
             delete books[bookId];
+            bookOrder = bookOrder.filter(id => id !== bookId);
             saveBooksToStorage();
+            saveBookOrder();
             renderBookCards();
             renderRegisterHierarchy();
             updateHeatmapBookSelect();
@@ -3251,7 +3610,7 @@
             return html;
         }
         
-        // 設定コンテンツ（試験日設定追加）
+        // 設定コンテンツ（CSVインポート追加）
         function getSettingsContent() {
             const currentExamDate = examDate ? examDate.toISOString().split('T')[0] : '';
             
@@ -3266,6 +3625,31 @@
                 </div>
                 
                 <div class="card" style="margin: 10px;">
+                    <h4>📥 CSVインポート</h4>
+                    <div class="import-section">
+                        <label class="form-label">問題集名</label>
+                        <input type="text" class="form-control" id="importBookName" placeholder="問題集名を入力">
+                        
+                        <label class="form-label" style="margin-top: 15px;">CSV形式の階層データ</label>
+                        <textarea class="import-textarea" id="importCsvData" placeholder="CSV形式のデータを貼り付けてください"></textarea>
+                        
+                        <div class="import-help">
+                            <strong>CSV形式の例：</strong><br>
+                            科目,章,節,項,問題数<br>
+                            民法,総則,権利能力,,5<br>
+                            民法,総則,意思能力,,3<br>
+                            民法,物権,物権変動,対抗要件,10<br>
+                            行政法,行政主体,,,20<br>
+                            <br>
+                            ※ 空欄は省略可能です<br>
+                            ※ 問題数を指定すると自動で連番が振られます
+                        </div>
+                        
+                        <button class="save-button" style="margin-top: 15px;" onclick="importCSV()">CSVをインポート</button>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin: 10px;">
                     <h4>📖 使い方</h4>
                     <ol style="margin-left: 20px; line-height: 1.8;">
                         <li>「登録」から問題集を作成し、階層構造を設定</li>
@@ -3274,6 +3658,7 @@
                         <li>「進捗」で全体の進み具合を把握</li>
                         <li>カレンダーで学習計画を管理</li>
                         <li>タイマーで学習時間を測定</li>
+                        <li>CSVインポートで階層を一括登録</li>
                     </ol>
                 </div>
                 
@@ -3304,6 +3689,120 @@
             return html;
         }
         
+        // CSVインポート機能
+        function importCSV() {
+            const bookName = document.getElementById('importBookName').value;
+            const csvData = document.getElementById('importCsvData').value;
+            
+            if (!bookName || !csvData) {
+                alert('問題集名とCSVデータを入力してください');
+                return;
+            }
+            
+            try {
+                const lines = csvData.trim().split('\n');
+                const bookId = 'book_' + Date.now();
+                const book = {
+                    id: bookId,
+                    name: bookName,
+                    examType: 'gyousei',
+                    structure: {},
+                    createdAt: new Date().toISOString()
+                };
+                
+                // ヘッダー行をスキップ
+                let startIndex = 0;
+                if (lines[0].includes('科目') || lines[0].includes('章')) {
+                    startIndex = 1;
+                }
+                
+                for (let i = startIndex; i < lines.length; i++) {
+                    const parts = lines[i].split(',').map(p => p.trim());
+                    const [subject, chapter, section, subsection, questionCount] = parts;
+                    
+                    if (!subject) continue;
+                    
+                    // 科目を追加
+                    if (!book.structure[subject]) {
+                        book.structure[subject] = {
+                            type: 'subject',
+                            children: {}
+                        };
+                    }
+                    
+                    if (chapter) {
+                        // 章を追加
+                        if (!book.structure[subject].children[chapter]) {
+                            book.structure[subject].children[chapter] = {
+                                type: 'chapter',
+                                children: {}
+                            };
+                        }
+                        
+                        if (section) {
+                            // 節を追加
+                            if (!book.structure[subject].children[chapter].children[section]) {
+                                book.structure[subject].children[chapter].children[section] = {
+                                    type: 'section',
+                                    children: {}
+                                };
+                            }
+                            
+                            if (subsection) {
+                                // 項を追加
+                                if (!book.structure[subject].children[chapter].children[section].children[subsection]) {
+                                    book.structure[subject].children[chapter].children[section].children[subsection] = {
+                                        type: 'subsection'
+                                    };
+                                }
+                                
+                                // 項に問題を追加
+                                if (questionCount && parseInt(questionCount) > 0) {
+                                    const questions = [];
+                                    for (let j = 1; j <= parseInt(questionCount); j++) {
+                                        questions.push(j);
+                                    }
+                                    book.structure[subject].children[chapter].children[section].children[subsection].questions = questions;
+                                }
+                            } else {
+                                // 節に問題を追加
+                                if (questionCount && parseInt(questionCount) > 0) {
+                                    const questions = [];
+                                    for (let j = 1; j <= parseInt(questionCount); j++) {
+                                        questions.push(j);
+                                    }
+                                    book.structure[subject].children[chapter].children[section].questions = questions;
+                                }
+                            }
+                        } else {
+                            // 章に問題を追加
+                            if (questionCount && parseInt(questionCount) > 0) {
+                                const questions = [];
+                                for (let j = 1; j <= parseInt(questionCount); j++) {
+                                    questions.push(j);
+                                }
+                                book.structure[subject].children[chapter].questions = questions;
+                            }
+                        }
+                    }
+                }
+                
+                books[bookId] = book;
+                bookOrder.push(bookId);
+                saveBooksToStorage();
+                saveBookOrder();
+                renderBookCards();
+                updateHeatmapBookSelect();
+                updateRadarBookSelect();
+                
+                alert('CSVデータをインポートしました');
+                closeFooterModal();
+            } catch (error) {
+                alert('CSVの解析に失敗しました。形式を確認してください。');
+                console.error(error);
+            }
+        }
+        
         // 試験日保存
         function saveExamDate() {
             const input = document.getElementById('examDateInput');
@@ -3321,7 +3820,9 @@
             if (!confirm('この問題集を削除しますか？')) return;
             
             delete books[bookId];
+            bookOrder = bookOrder.filter(id => id !== bookId);
             saveBooksToStorage();
+            saveBookOrder();
             renderBookCards();
             updateHeatmapBookSelect();
             updateRadarBookSelect();
@@ -3342,6 +3843,12 @@
                 option.textContent = book.name;
                 select.appendChild(option);
             });
+            
+            // ピン固定された問題集があれば選択
+            if (heatmapPinnedBook && books[heatmapPinnedBook]) {
+                select.value = heatmapPinnedBook;
+                updateHeatmap();
+            }
         }
         
         // レーダーチャート問題集選択更新
@@ -3357,9 +3864,15 @@
                 option.textContent = book.name;
                 select.appendChild(option);
             });
+            
+            // ピン固定された問題集があれば選択
+            if (radarPinnedBook && books[radarPinnedBook]) {
+                select.value = radarPinnedBook;
+                drawRadarChart();
+            }
         }
         
-        // ヒートマップ更新
+        // ヒートマップ更新（クリックで正誤切り替え可能）
         function updateHeatmap() {
             const container = document.getElementById('heatmapGrid');
             const select = document.getElementById('heatmapBookSelect');
@@ -3396,10 +3909,77 @@
                     cellClass += ' bookmarked';
                 }
                 
-                html += `<div class="heatmap-cell ${cellClass}">${q.number}</div>`;
+                html += `<div class="heatmap-cell ${cellClass}" 
+                         onclick="toggleHeatmapQuestion('${book.id}', '${q.path.join('/')}', '${q.number}')">${q.number}</div>`;
             });
             
             container.innerHTML = html || '<p style="color: var(--gray); text-align: center;">データがありません</p>';
+        }
+        
+        // ヒートマップの問題状態切り替え
+        function toggleHeatmapQuestion(bookId, pathStr, questionNum) {
+            const pathArray = pathStr.split('/');
+            
+            // 既存の記録を探す
+            let existingRecordIndex = -1;
+            for (let i = allRecords.length - 1; i >= 0; i--) {
+                if (allRecords[i].bookId === bookId && 
+                    allRecords[i].path.join('/') === pathStr) {
+                    existingRecordIndex = i;
+                    break;
+                }
+            }
+            
+            let record;
+            if (existingRecordIndex !== -1) {
+                record = allRecords[existingRecordIndex];
+            } else {
+                // 新しい記録を作成
+                record = {
+                    bookId: bookId,
+                    bookName: books[bookId].name,
+                    path: pathArray,
+                    questions: {},
+                    timestamp: new Date().toISOString(),
+                    stats: { total: 0, correct: 0, wrong: 0, rate: '0%' }
+                };
+                allRecords.push(record);
+            }
+            
+            // 問題の状態を切り替え
+            if (!record.questions[questionNum]) {
+                record.questions[questionNum] = { state: 'correct', bookmarked: false };
+            } else if (record.questions[questionNum].state === 'correct') {
+                record.questions[questionNum].state = 'wrong';
+            } else if (record.questions[questionNum].state === 'wrong') {
+                record.questions[questionNum].state = null;
+                delete record.questions[questionNum];
+            } else {
+                record.questions[questionNum].state = 'correct';
+            }
+            
+            // 統計を更新
+            let total = 0, correct = 0, wrong = 0;
+            Object.values(record.questions).forEach(q => {
+                if (q.state) {
+                    total++;
+                    if (q.state === 'correct') correct++;
+                    else if (q.state === 'wrong') wrong++;
+                }
+            });
+            
+            record.stats = {
+                total,
+                correct,
+                wrong,
+                rate: total > 0 ? Math.round((correct / total) * 100) + '%' : '0%'
+            };
+            
+            // 保存
+            localStorage.setItem('studyHistory', JSON.stringify(allRecords));
+            
+            // ヒートマップを更新
+            updateHeatmap();
         }
         
         // レーダーチャートモード切り替え
@@ -3409,14 +3989,17 @@
             btn.classList.add('active');
             
             const select = document.getElementById('radarBookSelect');
+            const toggleBtn = document.getElementById('radarToggleBtn');
             
             if (mode === 'compare') {
                 // 比較モードでは全問題集の科目別平均を表示
                 select.style.display = 'none';
+                toggleBtn.style.display = 'none';
                 drawRadarChartCompare();
             } else {
                 // 科目別モードでは選択した問題集の科目を表示
                 select.style.display = 'block';
+                toggleBtn.style.display = 'block';
                 drawRadarChart();
             }
         }
@@ -4201,12 +4784,12 @@
         }
         
         // データクリア
-function clearAllData() {
-    if (confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
-        localStorage.clear();
-        location.reload();
-    }
-}
-</script>
+        function clearAllData() {
+            if (confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
