@@ -1901,7 +1901,7 @@
             <button class="card-sort-btn" onclick="toggleAnalysisSort()">並替え</button>
             <div id="analysisCardsContainer">
                 <!-- 学習グラフ -->
-                <div class="accordion card" data-card-id="chart">
+                <div class="accordion" data-card-id="chart">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <span>📊 学習グラフ</span>
                         <span class="accordion-arrow">▼</span>
@@ -1919,7 +1919,7 @@
                 </div>
                 
                 <!-- 学習履歴 -->
-                <div class="accordion card" data-card-id="history">
+                <div class="accordion" data-card-id="history">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <span>📅 学習履歴</span>
                         <span class="accordion-arrow">▼</span>
@@ -1930,7 +1930,7 @@
                 </div>
                 
                 <!-- ヒートマップ -->
-                <div class="accordion card" data-card-id="heatmap">
+                <div class="accordion" data-card-id="heatmap">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <span>🗺️ 問題ヒートマップ</span>
                         <span class="accordion-arrow">▼</span>
@@ -1940,7 +1940,7 @@
                             <select class="heatmap-select" id="heatmapBookSelect" onchange="updateHeatmap()">
                                 <option value="">問題集を選択</option>
                             </select>
-                            <button class="heatmap-toggle-btn" id="heatmapToggleBtn" onclick="toggleHeatmapPinned()">📌 固定</button>
+                            <button class="heatmap-toggle-btn" id="heatmapToggleBtn" onclick="toggleHeatmapPinned()">📌</button>
                         </div>
                         <div class="heatmap-grid" id="heatmapGrid"></div>
                     </div>
@@ -1979,7 +1979,7 @@
                         <select class="radar-chart-select" id="radarBookSelect" onchange="drawRadarChart()">
                             <option value="">問題集を選択</option>
                         </select>
-                        <button class="radar-toggle-btn" id="radarToggleBtn" onclick="toggleRadarPinned()">📌 固定表示</button>
+                        <button class="radar-toggle-btn" id="radarToggleBtn" onclick="toggleRadarPinned()">📌</button>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <button class="chart-btn active" id="radarModeSubject" onclick="setRadarMode('subject', this)">科目別</button>
                             <button class="chart-btn" id="radarModeCompare" onclick="setRadarMode('compare', this)">問題集比較</button>
