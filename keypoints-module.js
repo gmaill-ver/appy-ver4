@@ -163,6 +163,10 @@ class KeyPointsModuleClass {
         this.initialized = false;
         this.isContentView = false;
         this.currentContentLocation = null;
+        
+        // カード選択用の状態
+        this.selectedSubjectForRegister = null;
+        this.selectedTopicForRegister = null;
     }
 
     /**
@@ -356,15 +360,13 @@ class KeyPointsModuleClass {
                 </div>
                 
                 <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                    <h4 style="margin-bottom: 15px;">📝 要点登録</h4>
-                    <div id="registrationArea">
-                        ${this.renderRegistrationForm()}
-                    </div>
+                    <h4 style="margin-bottom: 15px;">📝 要点編集</h4>
+                    ${this.renderRegistrationCards()}
                 </div>
                 
                 <div style="margin-top: 20px;">
                     <h4>📚 登録済み要点</h4>
-                    <div id="keyPointsList">${this.renderKeyPointsList()}</div>
+                    ${this.renderRegisteredKeyPoints()}
                 </div>
             </div>
         `;
@@ -390,9 +392,9 @@ class KeyPointsModuleClass {
             <div style="padding: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <h3 style="margin: 0;">${subject.name}</h3>
-                    <button class="save-button" onclick="KeyPointsModule.backToSubjectList()" 
-                            style="background: var(--gray); padding: 8px 12px; font-size: 14px;">
-                        ↩️ 戻る
+                    <button onclick="KeyPointsModule.backToSubjectList()" 
+                            style="padding: 6px 12px; background: var(--gray); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        戻る
                     </button>
                 </div>
                 
@@ -416,8 +418,8 @@ class KeyPointsModuleClass {
                         ${topic.difficulty}
                     </span>
                     ${hasContent ? 
-                        '<span style="color: var(--success); font-size: 12px;">✅ 登録済</span>' : 
-                        '<span style="color: var(--gray); font-size: 12px;">📎 リンク</span>'
+                        '<span style="color: var(--success);">✅</span>' : 
+                        ''
                     }
                 </div>
             `;
@@ -425,16 +427,280 @@ class KeyPointsModuleClass {
 
         html += `
                 </div>
+            </div>
+        `;
+
+        content.innerHTML = html;
+    }
+
+    /**
+     * カード形式の登録フォーム
+     */
+    renderRegistrationCards() {
+        const subjects = Object.entries(this.subjects)
+            .map(([key, data]) => ({ key, ...data }))
+            .sort((a, b) => a.order - b.order);
+
+        let html = `
+            <div id="registrationArea">
+                <div id="subjectSelectCards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+        `;
+
+        subjects.forEach(subject => {
+            const isSelected = this.selectedSubjectForRegister === subject.key;
+            html += `
+                <div class="register-card ${isSelected ? 'selected' : ''}" 
+                     style="background: ${isSelected ? 'var(--primary)' : 'white'}; color: ${isSelected ? 'white' : 'black'}; 
+                            border: 2px solid ${isSelected ? 'var(--primary)' : '#e2e8f0'}; 
+                            border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.2s;"
+                     onclick="KeyPointsModule.selectSubjectForRegister('${subject.key}')">
+                    <div style="font-size: 14px; font-weight: 500;">
+                        ${subject.name.replace('第', '').replace('編 ', '')}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
                 
-                <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                    <h4>✏️ 要点編集</h4>
-                    <button class="save-button" onclick="KeyPointsModule.showEditMode('${subjectKey}')">
-                        この科目の要点を管理
+                <div id="topicSelectArea" style="display: ${this.selectedSubjectForRegister ? 'block' : 'none'};">
+                    <div id="topicSelectCards" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                        ${this.renderTopicCards()}
+                    </div>
+                </div>
+                
+                <div id="htmlInputArea" style="display: ${this.selectedTopicForRegister !== null ? 'block' : 'none'};">
+                    <textarea class="form-control" id="registerHtml" rows="8" 
+                              placeholder="HTML形式の要点まとめを入力" 
+                              style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                    <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">
+                        💡 重要語句を &lt;span class="wp-key-term"&gt;語句&lt;/span&gt; で囲むと隠し機能付きになります
+                    </div>
+                    <button onclick="KeyPointsModule.registerKeyPoint()" 
+                            style="margin-top: 10px; padding: 10px 20px; background: var(--success); color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
+                        📝 要点を登録
                     </button>
                 </div>
             </div>
         `;
 
+        return html;
+    }
+
+    /**
+     * 項目カードを描画
+     */
+    renderTopicCards() {
+        if (!this.selectedSubjectForRegister) return '';
+
+        const subject = this.subjects[this.selectedSubjectForRegister];
+        if (!subject) return '';
+
+        let html = '<div style="display: flex; flex-direction: column; gap: 5px;">';
+
+        subject.topics.forEach((topic, index) => {
+            const hasContent = topic.type === 'html' && topic.htmlContent;
+            const isSelected = this.selectedTopicForRegister === index;
+            
+            html += `
+                <div class="topic-register-card ${isSelected ? 'selected' : ''}"
+                     style="background: ${isSelected ? '#f0f9ff' : 'white'}; 
+                            border: 1px solid ${isSelected ? 'var(--primary)' : '#e2e8f0'}; 
+                            border-radius: 6px; padding: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;"
+                     onclick="KeyPointsModule.selectTopicForRegister(${index})">
+                    <span style="color: #718096; min-width: 25px; font-size: 12px;">${index + 1}</span>
+                    <div style="flex: 1; font-size: 13px;">${topic.title}</div>
+                    ${hasContent ? '<span style="color: var(--success); font-size: 12px;">✅</span>' : ''}
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    /**
+     * 登録用科目選択
+     */
+    selectSubjectForRegister(subjectKey) {
+        this.selectedSubjectForRegister = subjectKey;
+        this.selectedTopicForRegister = null;
+        
+        // UIを更新
+        document.getElementById('registrationArea').innerHTML = this.renderRegistrationCards();
+    }
+
+    /**
+     * 登録用項目選択
+     */
+    selectTopicForRegister(topicIndex) {
+        this.selectedTopicForRegister = topicIndex;
+        
+        // HTMLエリアを表示
+        const htmlArea = document.getElementById('htmlInputArea');
+        if (htmlArea) {
+            htmlArea.style.display = 'block';
+            
+            // 既存のコンテンツがある場合は表示
+            const subject = this.subjects[this.selectedSubjectForRegister];
+            const topic = subject.topics[topicIndex];
+            if (topic.htmlContent) {
+                document.getElementById('registerHtml').value = topic.htmlContent;
+            }
+        }
+        
+        // 選択状態を更新
+        this.updateTopicCardSelection();
+    }
+
+    /**
+     * 項目カードの選択状態を更新
+     */
+    updateTopicCardSelection() {
+        const cards = document.querySelectorAll('.topic-register-card');
+        cards.forEach((card, index) => {
+            if (index === this.selectedTopicForRegister) {
+                card.style.background = '#f0f9ff';
+                card.style.border = '1px solid var(--primary)';
+            } else {
+                card.style.background = 'white';
+                card.style.border = '1px solid #e2e8f0';
+            }
+        });
+    }
+
+    /**
+     * 要点を登録
+     */
+    registerKeyPoint() {
+        const htmlContent = document.getElementById('registerHtml').value.trim();
+
+        if (!this.selectedSubjectForRegister || this.selectedTopicForRegister === null || !htmlContent) {
+            alert('すべての項目を入力してください');
+            return;
+        }
+
+        const subject = this.subjects[this.selectedSubjectForRegister];
+        if (!subject || !subject.topics[this.selectedTopicForRegister]) {
+            alert('選択した項目が見つかりません');
+            return;
+        }
+
+        // HTMLコンテンツを保存
+        subject.topics[this.selectedTopicForRegister].htmlContent = htmlContent;
+        subject.topics[this.selectedTopicForRegister].type = 'html';
+
+        // データを保存
+        if (this.saveKeyPointsData()) {
+            alert('要点を登録しました！');
+            
+            // フォームをリセット
+            this.selectedSubjectForRegister = null;
+            this.selectedTopicForRegister = null;
+            
+            // UIを更新
+            const content = document.getElementById('keyPointsMainContent');
+            if (content) {
+                content.innerHTML = this.renderSubjectList();
+            }
+        } else {
+            alert('保存に失敗しました');
+        }
+    }
+
+    /**
+     * 登録済み要点を表示（科目一覧と同様のUI）
+     */
+    renderRegisteredKeyPoints() {
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">';
+        let hasItems = false;
+
+        Object.entries(this.subjects)
+            .sort((a, b) => a[1].order - b[1].order)
+            .forEach(([subjectKey, subject]) => {
+                const registeredTopics = subject.topics
+                    .map((topic, index) => ({ ...topic, index }))
+                    .filter(topic => topic.type === 'html' && topic.htmlContent);
+
+                if (registeredTopics.length > 0) {
+                    hasItems = true;
+                    html += `
+                        <div class="registered-subject-card" style="background: white; border: 2px solid #86efac; border-radius: 10px; padding: 12px; cursor: pointer;"
+                             onclick="KeyPointsModule.showEditList('${subjectKey}')">
+                            <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 5px;">
+                                ${subject.name}
+                            </div>
+                            <div style="font-size: 12px; color: var(--success);">
+                                登録済: ${registeredTopics.length}件
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+        if (!hasItems) {
+            html = '<div style="text-align: center; color: var(--gray); padding: 20px;">登録済みの要点はありません</div>';
+        } else {
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    /**
+     * 編集リスト表示
+     */
+    showEditList(subjectKey) {
+        const subject = this.subjects[subjectKey];
+        if (!subject) return;
+
+        const content = document.getElementById('keyPointsMainContent');
+        if (!content) return;
+
+        let html = `
+            <div style="padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">${subject.name} の登録済み要点</h3>
+                    <button onclick="KeyPointsModule.backToSubjectList()" 
+                            style="padding: 6px 12px; background: var(--gray); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        戻る
+                    </button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+        `;
+
+        subject.topics.forEach((topic, index) => {
+            const hasContent = topic.type === 'html' && topic.htmlContent;
+            if (hasContent) {
+                html += `
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #718096; min-width: 25px; font-size: 14px;">${index + 1}</span>
+                            <div style="font-weight: 500;">
+                                ${topic.title}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="KeyPointsModule.editKeyPoint('${subjectKey}', ${index})" 
+                                    style="padding: 4px 8px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                編集
+                            </button>
+                            <button onclick="KeyPointsModule.deleteKeyPoint('${subjectKey}', ${index})" 
+                                    style="padding: 4px 8px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                削除
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+        
         content.innerHTML = html;
     }
 
@@ -580,224 +846,6 @@ class KeyPointsModuleClass {
     }
 
     /**
-     * 登録フォームを表示
-     */
-    renderRegistrationForm() {
-        const subjects = Object.entries(this.subjects)
-            .map(([key, data]) => ({ key, ...data }))
-            .sort((a, b) => a.order - b.order);
-
-        return `
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div>
-                    <label class="form-label">科目</label>
-                    <select class="form-control" id="registerSubject" onchange="KeyPointsModule.onSubjectSelect()">
-                        <option value="">科目を選択</option>
-                        ${subjects.map(s => `<option value="${s.key}">${s.name}</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div id="topicSelectArea" style="display: none;">
-                    <label class="form-label">項目</label>
-                    <select class="form-control" id="registerTopic">
-                        <option value="">項目を選択</option>
-                    </select>
-                </div>
-                
-                <div id="htmlInputArea" style="display: none;">
-                    <label class="form-label">HTML内容</label>
-                    <textarea class="form-control" id="registerHtml" rows="8" 
-                              placeholder="HTML形式の要点まとめを入力"></textarea>
-                    <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">
-                        💡 重要語句を &lt;span class="wp-key-term"&gt;語句&lt;/span&gt; で囲むと隠し機能付きになります
-                    </div>
-                </div>
-                
-                <button class="save-button" id="registerBtn" onclick="KeyPointsModule.registerKeyPoint()" 
-                        style="display: none;">
-                    📝 要点を登録
-                </button>
-            </div>
-        `;
-    }
-
-    /**
-     * 科目選択時の処理
-     */
-    onSubjectSelect() {
-        const subjectSelect = document.getElementById('registerSubject');
-        const topicSelectArea = document.getElementById('topicSelectArea');
-        const topicSelect = document.getElementById('registerTopic');
-        const htmlInputArea = document.getElementById('htmlInputArea');
-        const registerBtn = document.getElementById('registerBtn');
-
-        if (!subjectSelect.value) {
-            topicSelectArea.style.display = 'none';
-            htmlInputArea.style.display = 'none';
-            registerBtn.style.display = 'none';
-            return;
-        }
-
-        const subject = this.subjects[subjectSelect.value];
-        if (!subject) return;
-
-        // 項目リストを生成
-        topicSelect.innerHTML = '<option value="">項目を選択</option>';
-        subject.topics.forEach((topic, index) => {
-            topicSelect.innerHTML += `
-                <option value="${index}">
-                    ${index + 1}. ${topic.title} 
-                    ${topic.type === 'html' && topic.htmlContent ? '(登録済)' : ''}
-                </option>
-            `;
-        });
-
-        topicSelectArea.style.display = 'block';
-        htmlInputArea.style.display = 'block';
-        registerBtn.style.display = 'block';
-    }
-
-    /**
-     * 要点を登録
-     */
-    registerKeyPoint() {
-        const subjectKey = document.getElementById('registerSubject').value;
-        const topicIndex = parseInt(document.getElementById('registerTopic').value);
-        const htmlContent = document.getElementById('registerHtml').value.trim();
-
-        if (!subjectKey || isNaN(topicIndex) || !htmlContent) {
-            alert('すべての項目を入力してください');
-            return;
-        }
-
-        const subject = this.subjects[subjectKey];
-        if (!subject || !subject.topics[topicIndex]) {
-            alert('選択した項目が見つかりません');
-            return;
-        }
-
-        // HTMLコンテンツを保存
-        subject.topics[topicIndex].htmlContent = htmlContent;
-        subject.topics[topicIndex].type = 'html';
-
-        // データを保存
-        if (this.saveKeyPointsData()) {
-            alert('要点を登録しました！');
-            
-            // フォームをリセット
-            document.getElementById('registerSubject').value = '';
-            document.getElementById('registerTopic').innerHTML = '<option value="">項目を選択</option>';
-            document.getElementById('registerHtml').value = '';
-            document.getElementById('topicSelectArea').style.display = 'none';
-            document.getElementById('htmlInputArea').style.display = 'none';
-            document.getElementById('registerBtn').style.display = 'none';
-            
-            // リストを更新
-            const listContainer = document.getElementById('keyPointsList');
-            if (listContainer) {
-                listContainer.innerHTML = this.renderKeyPointsList();
-            }
-        } else {
-            alert('保存に失敗しました');
-        }
-    }
-
-    /**
-     * 登録済み要点一覧を表示
-     */
-    renderKeyPointsList() {
-        let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
-        let hasItems = false;
-
-        Object.entries(this.subjects)
-            .sort((a, b) => a[1].order - b[1].order)
-            .forEach(([subjectKey, subject]) => {
-                const registeredTopics = subject.topics
-                    .map((topic, index) => ({ ...topic, index }))
-                    .filter(topic => topic.type === 'html' && topic.htmlContent);
-
-                if (registeredTopics.length > 0) {
-                    hasItems = true;
-                    registeredTopics.forEach(topic => {
-                        html += `
-                            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <span style="font-size: 12px; color: var(--gray);">${subject.name}</span>
-                                    <div style="font-weight: 500; margin-top: 2px;">
-                                        ${topic.index + 1}. ${topic.title}
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 5px;">
-                                    <button onclick="KeyPointsModule.editKeyPoint('${subjectKey}', ${topic.index})" 
-                                            style="padding: 4px 8px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                                        編集
-                                    </button>
-                                    <button onclick="KeyPointsModule.deleteKeyPoint('${subjectKey}', ${topic.index})" 
-                                            style="padding: 4px 8px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                                        削除
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-
-        if (!hasItems) {
-            html += '<div style="text-align: center; color: var(--gray); padding: 20px;">登録済みの要点はありません</div>';
-        }
-
-        html += '</div>';
-        return html;
-    }
-
-    /**
-     * 編集モード表示
-     */
-    showEditMode(subjectKey) {
-        const subject = this.subjects[subjectKey];
-        if (!subject) return;
-
-        const content = document.getElementById('keyPointsList');
-        if (!content) return;
-
-        let html = `
-            <div style="padding: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h4>${subject.name} の要点管理</h4>
-                    <button onclick="KeyPointsModule.backToKeyPointsList()" 
-                            style="padding: 6px 12px; background: var(--gray); color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        戻る
-                    </button>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-        `;
-
-        subject.topics.forEach((topic, index) => {
-            const hasContent = topic.type === 'html' && topic.htmlContent;
-            html += `
-                <div style="background: ${hasContent ? '#f0fdf4' : 'white'}; border: 1px solid ${hasContent ? '#86efac' : '#e2e8f0'}; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        ${index + 1}. ${topic.title}
-                        ${hasContent ? '<span style="color: var(--success); margin-left: 10px;">✅</span>' : ''}
-                    </div>
-                    <button onclick="KeyPointsModule.editKeyPoint('${subjectKey}', ${index})" 
-                            style="padding: 4px 12px; background: ${hasContent ? 'var(--primary)' : 'var(--success)'}; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        ${hasContent ? '編集' : '追加'}
-                    </button>
-                </div>
-            `;
-        });
-
-        html += `
-                </div>
-            </div>
-        `;
-        
-        content.innerHTML = html;
-    }
-
-    /**
      * 要点編集
      */
     editKeyPoint(subjectKey, topicIndex) {
@@ -874,14 +922,7 @@ class KeyPointsModuleClass {
             document.querySelector('.custom-modal').remove();
             
             // 表示を更新
-            if (this.currentView === 'topics') {
-                this.selectSubject(subjectKey);
-            } else {
-                const listContainer = document.getElementById('keyPointsList');
-                if (listContainer) {
-                    listContainer.innerHTML = this.renderKeyPointsList();
-                }
-            }
+            this.showEditList(subjectKey);
         } else {
             alert('保存に失敗しました');
         }
@@ -907,22 +948,9 @@ class KeyPointsModuleClass {
             alert('削除しました');
             
             // 表示を更新
-            const listContainer = document.getElementById('keyPointsList');
-            if (listContainer) {
-                listContainer.innerHTML = this.renderKeyPointsList();
-            }
+            this.showEditList(subjectKey);
         } else {
             alert('削除に失敗しました');
-        }
-    }
-
-    /**
-     * 登録済み要点一覧に戻る
-     */
-    backToKeyPointsList() {
-        const listContainer = document.getElementById('keyPointsList');
-        if (listContainer) {
-            listContainer.innerHTML = this.renderKeyPointsList();
         }
     }
 
@@ -972,6 +1000,15 @@ class KeyPointsModuleClass {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1);
                 border-color: var(--primary) !important;
+            }
+            
+            .registered-subject-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .register-card:hover {
+                transform: scale(1.05);
             }
             
             .topic-item:hover {
@@ -1027,6 +1064,22 @@ class KeyPointsModuleClass {
                 border: none;
                 border-radius: 5px;
                 cursor: pointer;
+            }
+            
+            .form-control {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+            
+            .form-label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 500;
+                font-size: 14px;
+                color: #2d3748;
             }
         `;
         document.head.appendChild(style);
