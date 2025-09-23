@@ -1756,6 +1756,10 @@ body {
     flex: 1;
     padding: 10px;
     display: flex;
+    cursor: pointer;
+    pointer-events: auto;
+    background: none;
+    border: none;
     flex-direction: column;
     align-items: center;
     gap: 3px;
