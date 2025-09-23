@@ -520,6 +520,15 @@
             if (window.App && typeof window.App.switchFooterTab === 'function') {
                 console.log('📱 App.switchFooterTabを呼び出し');
                 window.App.switchFooterTab(tabName, event);
+
+                // デバッグ: モーダル状態をチェック
+                setTimeout(() => {
+                    const modal = document.getElementById('footerModal');
+                    console.log('🔍 モーダル存在確認:', !!modal);
+                    console.log('🔍 showクラス確認:', modal?.classList.contains('show'));
+                    console.log('🔍 モーダルスタイル:', modal?.style.display);
+                    console.log('🔍 モーダル計算スタイル:', window.getComputedStyle(modal)?.display);
+                }, 100);
                 return;
             }
 
