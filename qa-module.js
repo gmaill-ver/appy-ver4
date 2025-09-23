@@ -298,53 +298,196 @@ class QAModuleClass {
     }
 
     /**
-     * 問題を編集（★追加）
+     * 問題を編集（改善版 - モーダルダイアログ使用）
      */
     editQuestion(setName, questionId) {
         if (!DataManager.qaQuestions[setName]) {
             return false;
         }
-        
+
         // 該当の問題を探す
         const questions = DataManager.qaQuestions[setName];
         const questionIndex = questions.findIndex(q => q.id === questionId);
-        
+
         if (questionIndex === -1) {
             alert('問題が見つかりません');
             return false;
         }
-        
+
         const question = questions[questionIndex];
-        
-        // 編集ダイアログを表示
-        const newQuestion = prompt('問題文を編集してください:', question.question);
-        if (newQuestion === null) return false; // キャンセル
-        
-        const newAnswer = prompt('答えを編集してください:', question.answer);
-        if (newAnswer === null) return false; // キャンセル
-        
-        if (!newQuestion.trim() || !newAnswer.trim()) {
-            alert('問題文と答えを入力してください');
+
+        // 編集用のデータを保存
+        this.currentEditData = {
+            setName: setName,
+            questionIndex: questionIndex,
+            question: question
+        };
+
+        // モーダルに現在の値を設定
+        document.getElementById('editQuestionText').value = question.question || '';
+        document.getElementById('editAnswerText').value = question.answer || '';
+        document.getElementById('editExplanationText').value = question.explanation || '';
+
+        // モーダルを表示
+        const modal = document.getElementById('qaEditModal');
+        if (modal) {
+            modal.classList.add('show');
+
+            // ESCキーで閉じるイベントリスナーを追加
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    this.closeEditModal();
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+
+            // モーダル背景クリックで閉じる
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    this.closeEditModal();
+                }
+            };
+
+            // フォーカスを問題文に設定
+            setTimeout(() => {
+                document.getElementById('editQuestionText').focus();
+            }, 100);
+        }
+
+        return true;
+    }
+
+    /**
+     * 編集モーダルを閉じる
+     */
+    closeEditModal() {
+        const modal = document.getElementById('qaEditModal');
+        if (modal) {
+            modal.classList.remove('show');
+        }
+        this.currentEditData = null;
+    }
+
+    /**
+     * 編集した問題を保存
+     */
+    saveEditedQuestion() {
+        if (!this.currentEditData) {
             return false;
         }
-        
-        // 問題を更新
-        questions[questionIndex] = {
-            ...question,
-            question: newQuestion.trim(),
-            answer: newAnswer.trim()
-        };
-        
-        DataManager.saveQAQuestions();
-        
-        // リストを更新
-        const listContent = document.getElementById('qaListContent');
-        if (listContent) {
-            listContent.innerHTML = this.renderQAList();
+
+        // フォームから値を取得
+        const questionText = document.getElementById('editQuestionText').value.trim();
+        const answerText = document.getElementById('editAnswerText').value.trim();
+        const explanationText = document.getElementById('editExplanationText').value.trim();
+
+        // バリデーション
+        if (!questionText) {
+            this.showValidationError('問題文を入力してください', 'editQuestionText');
+            return false;
         }
-        
-        alert('問題を更新しました');
-        return true;
+
+        if (!answerText) {
+            this.showValidationError('答えを入力してください', 'editAnswerText');
+            return false;
+        }
+
+        try {
+            // 問題を更新
+            const { setName, questionIndex } = this.currentEditData;
+            const questions = DataManager.qaQuestions[setName];
+
+            questions[questionIndex] = {
+                ...questions[questionIndex],
+                question: questionText,
+                answer: answerText,
+                explanation: explanationText,
+                updatedAt: new Date().toISOString()
+            };
+
+            // データを保存
+            DataManager.saveQAQuestions();
+
+            // リストを更新
+            const listContent = document.getElementById('qaListContent');
+            if (listContent) {
+                listContent.innerHTML = this.renderQAList();
+            }
+
+            // モーダルを閉じる
+            this.closeEditModal();
+
+            // 成功メッセージ
+            this.showSuccessMessage('問題を更新しました');
+
+            return true;
+
+        } catch (error) {
+            console.error('問題更新エラー:', error);
+            this.showErrorMessage('問題の更新に失敗しました');
+            return false;
+        }
+    }
+
+    /**
+     * バリデーションエラーを表示
+     */
+    showValidationError(message, fieldId) {
+        // フィールドにフォーカス
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.focus();
+            field.style.borderColor = '#e74c3c';
+            setTimeout(() => {
+                field.style.borderColor = '';
+            }, 3000);
+        }
+
+        // エラーメッセージを表示
+        this.showErrorMessage(message);
+    }
+
+    /**
+     * エラーメッセージを表示
+     */
+    showErrorMessage(message) {
+        if (window.App && App.showError) {
+            App.showError(message);
+        } else {
+            alert('エラー: ' + message);
+        }
+    }
+
+    /**
+     * 成功メッセージを表示
+     */
+    showSuccessMessage(message) {
+        if (window.App && App.showSuccess) {
+            App.showSuccess(message);
+        } else {
+            // フォールバック用の簡単な通知
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 10001;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
     }
     
     /**
@@ -555,13 +698,14 @@ class QAModuleClass {
                 </div>
             </div>
             <div style="display: flex; gap: 5px;">
-                <button class="edit-btn" 
+                <button class="edit-btn"
                         onclick="QAModule.editQuestion('${setName}', ${q.id})"
-                        style="background: var(--secondary); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                    ✏️編集
+                        title="問題を編集">
+                    ✏️
                 </button>
-                <button class="delete-btn" 
-                        onclick="QAModule.deleteQuestion('${setName}', ${q.id})">
+                <button class="delete-btn"
+                        onclick="QAModule.deleteQuestion('${setName}', ${q.id})"
+                        title="問題を削除">
                     🗑️
                 </button>
             </div>

@@ -271,8 +271,8 @@ class Application {
         
         switch(tabName) {
             case 'register':
-                modalBody.innerHTML = this.getRegisterContent();
-                setTimeout(() => this.renderRegisterHierarchy(), 100);
+                modalBody.innerHTML = App.getRegisterContent();
+                setTimeout(() => App.renderRegisterHierarchy(), 100);
                 break;
             case 'qa':
                 if (window.QAModule && typeof QAModule.renderQAContent === 'function') {
@@ -290,15 +290,21 @@ class Application {
                 }
                 break;
             case 'results':
-                modalBody.innerHTML = this.getResultsContent();
+                modalBody.innerHTML = App.getResultsContent();
                 break;
             case 'settings':
-                modalBody.innerHTML = this.getSettingsContent();
-                setTimeout(() => this.renderCSVTemplateList(), 100);
+                modalBody.innerHTML = App.getSettingsContent();
+                setTimeout(() => App.renderCSVTemplateList(), 100);
                 break;
         }
         
-        modal.classList.add('active');
+        modal.classList.add('show');
+
+        // タブの状態を更新
+        document.querySelectorAll('.footer-tab').forEach(tab => tab.classList.remove('active'));
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
     }
 
     /**
@@ -334,7 +340,7 @@ class Application {
                 
                 alert('試験日を設定しました');
                 // モーダルを閉じる
-                setTimeout(() => this.closeFooterModal(), 100);
+                setTimeout(() => App.closeFooterModal(), 100);
             } else {
                 alert('試験日の設定に失敗しました。有効な日付を入力してください。');
             }
@@ -453,7 +459,7 @@ class Application {
     closeFooterModal() {
         const modal = document.getElementById('footerModal');
         if (modal) {
-            modal.classList.remove('active');
+            modal.classList.remove('show');
         }
     }
 
@@ -2645,7 +2651,7 @@ setTimeout(() => {
             }
             
             alert('CSVデータをインポートしました');
-            this.closeFooterModal();
+            App.closeFooterModal();
         } else {
             alert('CSVの解析に失敗しました。形式を確認してください。');
         }
@@ -2662,7 +2668,7 @@ setTimeout(() => {
         
         if (window.QAModule && typeof QAModule.importFromCSV === 'function') {
             if (QAModule.importFromCSV(setName, csvData)) {
-                this.closeFooterModal();
+                App.closeFooterModal();
             }
         } else {
             alert('一問一答モジュールが読み込まれていません');

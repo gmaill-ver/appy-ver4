@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- オフライン状態インジケーター -->
+    <div class="offline-indicator" id="offlineIndicator">
+        📶 オフラインモードで動作中
+    </div>
+
+    <!-- ロード状態 -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
     <!-- ヘッダー -->
     <header class="app-header">
         <button class="timer-icon-btn" onclick="App.openTimerModal()" title="タイマー">⏰</button>
@@ -207,23 +217,23 @@
     
     <!-- フッタータブ -->
     <div class="footer-tabs">
-        <button class="footer-tab active" onclick="App.switchFooterTab('register', event)">
+        <button class="footer-tab active" onclick="(window.App?.switchFooterTab || testFooterTab)('register', event)">
             <span class="footer-tab-icon">📝</span>
             <span class="footer-tab-label">登録</span>
         </button>
-        <button class="footer-tab" onclick="App.switchFooterTab('qa', event)">
+        <button class="footer-tab" onclick="(window.App?.switchFooterTab || testFooterTab)('qa', event)">
             <span class="footer-tab-icon">❓</span>
             <span class="footer-tab-label">一問一答</span>
         </button>
-        <button class="footer-tab" onclick="App.switchFooterTab('keypoints', event)">
+        <button class="footer-tab" onclick="(window.App?.switchFooterTab || testFooterTab)('keypoints', event)">
             <span class="footer-tab-icon">📚</span>
             <span class="footer-tab-label">要点確認</span>
         </button>
-        <button class="footer-tab" onclick="App.switchFooterTab('results', event)">
+        <button class="footer-tab" onclick="(window.App?.switchFooterTab || testFooterTab)('results', event)">
             <span class="footer-tab-icon">🏆</span>
             <span class="footer-tab-label">実績</span>
         </button>
-        <button class="footer-tab" onclick="App.switchFooterTab('settings', event)">
+        <button class="footer-tab" onclick="(window.App?.switchFooterTab || testFooterTab)('settings', event)">
             <span class="footer-tab-icon">⚙️</span>
             <span class="footer-tab-label">設定</span>
         </button>
@@ -375,7 +385,7 @@
     </div>
     
     <!-- フッターモーダル -->
-    <div id="footerModal" class="modal">
+    <div id="footerModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">タイトル</h3>
@@ -396,6 +406,46 @@
         <div class="dialog-buttons">
             <button class="dialog-btn secondary" onclick="App.closeDialog()">キャンセル</button>
             <button class="dialog-btn primary" id="dialogConfirmBtn">確定</button>
+        </div>
+    </div>
+
+    <!-- 一問一答編集モーダル -->
+    <div id="qaEditModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>問題の編集</h3>
+                <button class="modal-close" onclick="QAModule.closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">問題文</label>
+                    <textarea id="editQuestionText"
+                              class="form-control"
+                              rows="4"
+                              placeholder="問題文を入力してください"
+                              style="resize: vertical; min-height: 100px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">答え</label>
+                    <textarea id="editAnswerText"
+                              class="form-control"
+                              rows="3"
+                              placeholder="答えを入力してください"
+                              style="resize: vertical; min-height: 80px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">解説（任意）</label>
+                    <textarea id="editExplanationText"
+                              class="form-control"
+                              rows="2"
+                              placeholder="解説を入力してください（任意）"
+                              style="resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="QAModule.closeEditModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="QAModule.saveEditedQuestion()">保存</button>
+            </div>
         </div>
     </div>
 
@@ -422,6 +472,9 @@
     </script>
 
     <!-- 📱 JavaScript モジュール読み込み（順序重要） -->
+    <!-- 要点データ（最初に読み込み） -->
+    <script src="keypoints-data.js"></script>
+
     <script src="data-manager.js"></script>
     <script src="ui-components.js"></script>
     <script src="analytics.js"></script>
@@ -429,6 +482,34 @@
     <script src="timer-module.js"></script>
     <script src="keypoints-module.js"></script>
     <script src="app.js"></script>
+
+    <!-- デバッグ用コード -->
+    <script>
+        // アプリケーション初期化確認
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 App オブジェクト確認:', typeof window.App);
+            console.log('🔍 switchFooterTab メソッド確認:', typeof window.App?.switchFooterTab);
+
+            if (!window.App) {
+                console.error('❌ App オブジェクトが見つかりません');
+            }
+
+            if (!window.App?.switchFooterTab) {
+                console.error('❌ switchFooterTab メソッドが見つかりません');
+            }
+        });
+
+        // フッタータブのクリックテスト関数
+        function testFooterTab(tabName) {
+            console.log('🧪 フッタータブテスト:', tabName);
+            if (window.App && window.App.switchFooterTab) {
+                window.App.switchFooterTab(tabName, null);
+                console.log('✅ switchFooterTab 呼び出し成功');
+            } else {
+                console.error('❌ switchFooterTab が利用できません');
+            }
+        }
+    </script>
 
     <!-- 🔥 完全固定ユーザーID版Firebase統合コード（キャッシュクリア完全対応） -->
 <script>
