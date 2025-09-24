@@ -298,53 +298,190 @@ class QAModuleClass {
     }
 
     /**
-     * 問題を編集（★追加）
+     * 問題を編集（改善版：カスタムモーダル）
      */
     editQuestion(setName, questionId) {
         if (!DataManager.qaQuestions[setName]) {
             return false;
         }
-        
+
         // 該当の問題を探す
         const questions = DataManager.qaQuestions[setName];
         const questionIndex = questions.findIndex(q => q.id === questionId);
-        
+
         if (questionIndex === -1) {
             alert('問題が見つかりません');
             return false;
         }
-        
+
         const question = questions[questionIndex];
-        
-        // 編集ダイアログを表示
-        const newQuestion = prompt('問題文を編集してください:', question.question);
-        if (newQuestion === null) return false; // キャンセル
-        
-        const newAnswer = prompt('答えを編集してください:', question.answer);
-        if (newAnswer === null) return false; // キャンセル
-        
-        if (!newQuestion.trim() || !newAnswer.trim()) {
-            alert('問題文と答えを入力してください');
-            return false;
+
+        // カスタム編集モーダルを表示
+        this.showEditModal(setName, questionId, question);
+        return true;
+    }
+
+    /**
+     * 編集モーダルを表示
+     */
+    showEditModal(setName, questionId, question) {
+        // 既存のモーダルがあれば削除
+        const existingModal = document.getElementById('qaEditModal');
+        if (existingModal) {
+            existingModal.remove();
         }
-        
+
+        // モーダルHTML作成
+        const modalHTML = `
+            <div id="qaEditModal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            ">
+                <div style="
+                    background: white;
+                    width: 90%;
+                    max-width: 600px;
+                    max-height: 80vh;
+                    border-radius: 12px;
+                    padding: 24px;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                    overflow-y: auto;
+                ">
+                    <h3 style="margin: 0 0 20px 0; font-size: 18px;">問題を編集</h3>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                            問題文
+                        </label>
+                        <textarea id="editQuestionText" style="
+                            width: 100%;
+                            height: 120px;
+                            padding: 12px;
+                            border: 2px solid #e0e0e0;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-family: inherit;
+                            resize: vertical;
+                            box-sizing: border-box;
+                        " placeholder="問題文を入力してください">${question.question}</textarea>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                            答え
+                        </label>
+                        <textarea id="editAnswerText" style="
+                            width: 100%;
+                            height: 120px;
+                            padding: 12px;
+                            border: 2px solid #e0e0e0;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-family: inherit;
+                            resize: vertical;
+                            box-sizing: border-box;
+                        " placeholder="答えを入力してください">${question.answer}</textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button onclick="QAModule.closeEditModal()" style="
+                            padding: 10px 20px;
+                            border: 2px solid #ddd;
+                            background: white;
+                            color: #666;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">キャンセル</button>
+                        <button onclick="QAModule.saveEditedQuestion('${setName}', ${questionId})" style="
+                            padding: 10px 20px;
+                            border: none;
+                            background: #007bff;
+                            color: white;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">保存</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // モーダルをDOMに追加
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // テキストエリアにフォーカス
+        setTimeout(() => {
+            const textArea = document.getElementById('editQuestionText');
+            if (textArea) {
+                textArea.focus();
+                textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+            }
+        }, 100);
+    }
+
+    /**
+     * 編集モーダルを閉じる
+     */
+    closeEditModal() {
+        const modal = document.getElementById('qaEditModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    /**
+     * 編集された問題を保存
+     */
+    saveEditedQuestion(setName, questionId) {
+        const questionText = document.getElementById('editQuestionText')?.value.trim();
+        const answerText = document.getElementById('editAnswerText')?.value.trim();
+
+        if (!questionText || !answerText) {
+            alert('問題文と答えを入力してください');
+            return;
+        }
+
+        if (!DataManager.qaQuestions[setName]) {
+            alert('問題集が見つかりません');
+            return;
+        }
+
+        const questions = DataManager.qaQuestions[setName];
+        const questionIndex = questions.findIndex(q => q.id === questionId);
+
+        if (questionIndex === -1) {
+            alert('問題が見つかりません');
+            return;
+        }
+
         // 問題を更新
         questions[questionIndex] = {
-            ...question,
-            question: newQuestion.trim(),
-            answer: newAnswer.trim()
+            ...questions[questionIndex],
+            question: questionText,
+            answer: answerText
         };
-        
+
         DataManager.saveQAQuestions();
-        
+
+        // モーダルを閉じる
+        this.closeEditModal();
+
         // リストを更新
         const listContent = document.getElementById('qaListContent');
         if (listContent) {
             listContent.innerHTML = this.renderQAList();
         }
-        
+
         alert('問題を更新しました');
-        return true;
     }
     
     /**
