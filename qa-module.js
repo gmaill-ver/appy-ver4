@@ -466,23 +466,13 @@ class QAModuleClass {
     }
 
     /**
-     * QA管理画面を表示
+     * QA管理画面を表示（問題リスト更新）
      */
     showQAManagement() {
-        const qaContent = document.getElementById('qaContent');
-        if (!qaContent) {
-            console.error('QA content area not found');
-            return;
+        const listContent = document.getElementById('qaListContent');
+        if (listContent) {
+            listContent.innerHTML = this.renderQAList();
         }
-
-        // QA管理画面のHTMLを表示
-        qaContent.innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <h3>一問一答管理</h3>
-                <p>登録済みの問題を編集・削除できます</p>
-                ${this.renderQAList()}
-            </div>
-        `;
     }
 
     /**
@@ -590,81 +580,17 @@ class QAModuleClass {
     }
 
     /**
-     * UIコンテンツを生成
+     * UIコンテンツを生成（編集・削除機能のみ）
      */
     renderQAContent() {
-        const sets = this.getSetList();
-        
         let html = `
-            <!-- ★順序入れ替え: 問題開始を先に -->
-            <div class="qa-card">
-                <h4>問題開始</h4>
-                <div class="qa-selector">
-                    <select id="qaSetSelect">
-                        <option value="">問題集を選択</option>
-        `;
-        
-        sets.forEach(setName => {
-            const count = this.getQuestions(setName).length;
-            html += `<option value="${setName}">${setName} (${count}問)</option>`;
-        });
-        
-        html += `
-                    </select>
-                    <button onclick="QAModule.handleStart()">開始</button>
-                </div>
-                
-                <div class="qa-progress" id="qaProgress" style="display: none;">
-                    <span class="qa-progress-text">
-                        問題 <span id="qaCurrentNum">0</span> / <span id="qaTotalNum">0</span>
-                    </span>
-                    <div class="qa-stats">
-                        <span class="qa-stat">
-                            正解: <span class="qa-stat-value" id="qaCorrectCount">0</span>
-                        </span>
-                        <span class="qa-stat">
-                            不正解: <span class="qa-stat-value" id="qaWrongCount">0</span>
-                        </span>
-                    </div>
-                </div>
-                
-                <div id="qaContent"></div>
-            </div>
-            
-            <!-- ★アコーディオン化: 問題を手動追加 -->
-            <div class="card" style="margin-top: 20px;">
-                <div class="accordion-header" onclick="QAModule.toggleAddSection()" style="cursor: pointer; padding: 10px; background: var(--light); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-                    <h4 style="margin: 0;">問題を手動追加</h4>
-                    <span id="accordionIcon">▶</span>
-                </div>
-                <div id="addQuestionSection" style="display: none; padding-top: 15px;">
-                    <div class="form-group">
-                        <label class="form-label">問題集名</label>
-                        <input type="text" class="form-control" id="qaNewSetName" 
-                               placeholder="問題集名">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">問題文</label>
-                        <textarea class="form-control" id="qaNewQuestion" rows="3" 
-                                  placeholder="問題文を入力"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">答え</label>
-                        <textarea class="form-control" id="qaNewAnswer" rows="3" 
-                                  placeholder="答えを入力"></textarea>
-                    </div>
-                    <button class="save-button" onclick="QAModule.handleAddQuestion()">
-                        問題を追加
-                    </button>
-                </div>
-            </div>
-            
-            <div class="card" style="margin-top: 20px;">
-                <h4>登録済み問題</h4>
+            <div class="card">
+                <h4>登録済み問題の管理</h4>
+                <p>問題をクリックして編集・削除ができます</p>
                 <div id="qaListContent">${this.renderQAList()}</div>
             </div>
         `;
-        
+
         return html;
     }
 
