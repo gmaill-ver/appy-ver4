@@ -322,120 +322,107 @@ class QAModuleClass {
     }
 
     /**
-     * 編集モーダルを表示
+     * 編集モーダルを表示（QA画面内に表示）
      */
     showEditModal(setName, questionId, question) {
-        // 既存のモーダルがあれば削除
-        const existingModal = document.getElementById('qaEditModal');
-        if (existingModal) {
-            existingModal.remove();
+        // QAコンテンツエリアを取得
+        const qaContent = document.getElementById('qaContent');
+        if (!qaContent) {
+            console.error('QA content area not found');
+            return;
         }
 
-        // モーダルHTML作成
-        const modalHTML = `
-            <div id="qaEditModal" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
+        // 編集フォームHTML作成
+        const editHTML = `
+            <div class="qa-edit-form" style="
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                margin: 20px 0;
             ">
-                <div style="
-                    background: white;
-                    width: 90%;
-                    max-width: 600px;
-                    max-height: 80vh;
-                    border-radius: 12px;
-                    padding: 24px;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-                    overflow-y: auto;
-                ">
-                    <h3 style="margin: 0 0 20px 0; font-size: 18px;">問題を編集</h3>
+                <h3 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">問題を編集</h3>
 
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
-                            問題文
-                        </label>
-                        <textarea id="editQuestionText" style="
-                            width: 100%;
-                            height: 120px;
-                            padding: 12px;
-                            border: 2px solid #e0e0e0;
-                            border-radius: 8px;
-                            font-size: 14px;
-                            font-family: inherit;
-                            resize: vertical;
-                            box-sizing: border-box;
-                        " placeholder="問題文を入力してください">${question.question}</textarea>
-                    </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                        問題文
+                    </label>
+                    <textarea id="editQuestionText" style="
+                        width: 100%;
+                        height: 120px;
+                        padding: 12px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-family: inherit;
+                        resize: vertical;
+                        box-sizing: border-box;
+                        line-height: 1.5;
+                    " placeholder="問題文を入力してください">${question.question}</textarea>
+                </div>
 
-                    <div style="margin-bottom: 24px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
-                            答え
-                        </label>
-                        <textarea id="editAnswerText" style="
-                            width: 100%;
-                            height: 120px;
-                            padding: 12px;
-                            border: 2px solid #e0e0e0;
-                            border-radius: 8px;
-                            font-size: 14px;
-                            font-family: inherit;
-                            resize: vertical;
-                            box-sizing: border-box;
-                        " placeholder="答えを入力してください">${question.answer}</textarea>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">
+                        答え
+                    </label>
+                    <textarea id="editAnswerText" style="
+                        width: 100%;
+                        height: 120px;
+                        padding: 12px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-family: inherit;
+                        resize: vertical;
+                        box-sizing: border-box;
+                        line-height: 1.5;
+                    " placeholder="答えを入力してください">${question.answer}</textarea>
+                </div>
 
-                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                        <button onclick="QAModule.closeEditModal()" style="
-                            padding: 10px 20px;
-                            border: 2px solid #ddd;
-                            background: white;
-                            color: #666;
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">キャンセル</button>
-                        <button onclick="QAModule.saveEditedQuestion('${setName}', ${questionId})" style="
-                            padding: 10px 20px;
-                            border: none;
-                            background: #007bff;
-                            color: white;
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">保存</button>
-                    </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="QAModule.closeEditModal()" style="
+                        padding: 12px 24px;
+                        border: 2px solid #ddd;
+                        background: white;
+                        color: #666;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">キャンセル</button>
+                    <button onclick="QAModule.saveEditedQuestion('${setName}', ${questionId})" style="
+                        padding: 12px 24px;
+                        border: none;
+                        background: #007bff;
+                        color: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">保存</button>
                 </div>
             </div>
         `;
 
-        // モーダルをDOMに追加
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        // 現在のコンテンツを編集フォームに置き換え
+        qaContent.innerHTML = editHTML;
 
         // テキストエリアにフォーカス
         setTimeout(() => {
             const textArea = document.getElementById('editQuestionText');
             if (textArea) {
                 textArea.focus();
-                textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+                textArea.setSelectionRange(0, 0);
             }
         }, 100);
     }
 
     /**
-     * 編集モーダルを閉じる
+     * 編集モーダルを閉じる（QA一覧表示に戻る）
      */
     closeEditModal() {
-        const modal = document.getElementById('qaEditModal');
-        if (modal) {
-            modal.remove();
-        }
+        // QA一覧表示に戻る
+        this.showQAManagement();
     }
 
     /**
@@ -472,18 +459,32 @@ class QAModuleClass {
 
         DataManager.saveQAQuestions();
 
-        // モーダルを閉じる
-        this.closeEditModal();
-
-        // リストを更新
-        const listContent = document.getElementById('qaListContent');
-        if (listContent) {
-            listContent.innerHTML = this.renderQAList();
-        }
+        // QA一覧表示に戻る
+        this.showQAManagement();
 
         alert('問題を更新しました');
     }
-    
+
+    /**
+     * QA管理画面を表示
+     */
+    showQAManagement() {
+        const qaContent = document.getElementById('qaContent');
+        if (!qaContent) {
+            console.error('QA content area not found');
+            return;
+        }
+
+        // QA管理画面のHTMLを表示
+        qaContent.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <h3>一問一答管理</h3>
+                <p>登録済みの問題を編集・削除できます</p>
+                ${this.renderQAList()}
+            </div>
+        `;
+    }
+
     /**
      * アコーディオントグル
      */
