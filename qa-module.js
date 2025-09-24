@@ -554,14 +554,13 @@ class QAModuleClass {
                     ${q.answer}
                 </div>
             </div>
-            <div style="display: flex; gap: 5px;">
-                <button class="edit-btn" 
-                        onclick="QAModule.editQuestion('${setName}', ${q.id})"
-                        style="background: var(--secondary); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                    ✏️編集
+            <div style="display: flex; gap: 8px;">
+                <button onclick="QAModule.editQuestion('${setName}', ${q.id})"
+                        style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px;">
+                    ✏️
                 </button>
-                <button class="delete-btn" 
-                        onclick="QAModule.deleteQuestion('${setName}', ${q.id})">
+                <button onclick="QAModule.deleteQuestion('${setName}', ${q.id})"
+                        style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px;">
                     🗑️
                 </button>
             </div>
