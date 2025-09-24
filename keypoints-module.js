@@ -483,6 +483,29 @@ class KeyPointsModuleClass {
     }
 
     /**
+     * 🔄 カスタムコンテンツをマージ（DataManager連携用）
+     */
+    mergeCustomContent(subjectKey, subjectData) {
+        try {
+            if (!this.subjects[subjectKey] || !subjectData || !subjectData.topics) {
+                return;
+            }
+
+            // topics配列の各項目にカスタムHTMLコンテンツをマージ
+            subjectData.topics.forEach((savedTopic, index) => {
+                if (savedTopic.htmlContent && this.subjects[subjectKey].topics[index]) {
+                    this.subjects[subjectKey].topics[index].htmlContent = savedTopic.htmlContent;
+                    this.subjects[subjectKey].topics[index].type = 'html';
+                }
+            });
+
+            console.log(`✅ ${subjectKey} のカスタムコンテンツをマージしました`);
+        } catch (error) {
+            console.error(`❌ ${subjectKey} のコンテンツマージエラー:`, error);
+        }
+    }
+
+    /**
      * 要点確認のメインコンテンツを描画
      */
     renderKeyPointsContent() {
